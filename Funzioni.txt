@@ -32,10 +32,11 @@ FUNZIONI PROPOSTE
 	(autenticare la proprietà del sito per non fare andare le mail nello spam)
 
 -Prenota e ritira in negozio
+-Sezione eventi e news
 -Recensioni
 -Wishlist
 -Lingua inglese
 -Sconti
 -Carrelli abbandonati
--Messaggistica interna
+-Messaggistica interna (con un servizio esterno)
 -Accesso con google
