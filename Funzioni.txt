@@ -1,0 +1,41 @@
+FUNZIONI BASE
+
+-lettura catalogo
+-lettura prodotto
+-ricerca e filtri
+-crea check out
+-crea intent
+-pagamento stripe
+
+Pannello di amministrazione:
+	-login
+	-inserimento prodotto
+	-rimozione/disattivazione prodotto
+	-modifica prodotto
+	-lista degli ordini
+
+
+
+
+
+FUNZIONI PROPOSTE
+
+-Registrazione/login (account):
+	-storico
+	-stato ordine + tracciamento
+	-password dimenticata
+	-email di conferma (creazione account e/o aggiornamenti sull’ordine)
+
+-Newsletter:
+	-Iscrizione
+	-Annullamento iscrizione
+	(autenticare la proprietà del sito per non fare andare le mail nello spam)
+
+-Prenota e ritira in negozio
+-Recensioni
+-Wishlist
+-Lingua inglese
+-Sconti
+-Carrelli abbandonati
+-Messaggistica interna
+-Accesso con google
