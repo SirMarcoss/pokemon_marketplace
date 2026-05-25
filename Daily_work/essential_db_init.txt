@@ -1,0 +1,3 @@
+Realizzazione di un db con funzioni essenziali funzionanti individualmente
+
+-optional implementare funzioni molto generali in python
