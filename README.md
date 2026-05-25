@@ -19,7 +19,10 @@ Il software è ingegnerizzato come un **E-commerce B2C Single-Vendor**. Il negoz
 ### Giorno 0: Fondamenta, Versionamento e Data Modeling
 * **Infrastruttura di Versioning:** Inizializzazione della repository privata su GitHub. Configurazione delle regole di scomposizione dei Line Endings (`.gitattributes`) per prevenire conflitti distruttivi tra l'ambiente Unix-based (`LF` su macOS) e l'ambiente Windows (`CRLF`). Configurazione del filtro `.gitignore` per l'isolamento dei file di metadati di sistema e delle credenziali sensibili.
 * **Modellazione dei Dati:** Progettazione del Diagramma Entità-Relazione (ER) normalizzato in Terza Forma Normale (3NF). Strutturazione delle tabelle core (`users`, `expansions`, `products`, `addresses`, `carts`, `cart_items`, `orders`, `order_items`) con risoluzione esplicita delle relazioni Molti-a-Molti tramite entità deboli (tabelle ponte) dotate di persistenza dello stato storico dei prezzi.
-* **Analisi dei Requisiti Funzionali:** Definizione del flusso logico delle transazioni (Carrello asincrono salvato su DB $ightarrow$ Checkout con indirizzo vincolato $ightarrow$ Transazione Stripe $ightarrow$ Cristallizzazione dell'ordine fiscale).
+* **Analisi dei Requisiti Funzionali:** Definizione del flusso logico delle transazioni (Carrello asincrono salvato su DB $
+ightarrow$ Checkout con indirizzo vincolato $
+ightarrow$ Transazione Stripe $
+ightarrow$ Cristallizzazione dell'ordine fiscale).
 
 ---
 
@@ -63,4 +66,34 @@ Lavorando in un ambiente cross-platform, l'osservanza di queste regole previene 
 4.  **Convenzione dei Commit (Conventional Commits):** Ogni commit deve auto-esplicare la sua natura algoritmica seguendo lo standard:
     * `feat(scope): ...` (Nuova funzionalità)
     * `fix(scope): ...` (Risoluzione di un bug o di un crash)
-    * `chore(scope): ...` (Aggiornamento di configurazioni o dipendenze)
+    * `chore(scope): ...` (Aggiornamento di configurazioni o dipendenze
+
+
+## 5. Informazioni Utili 
+stack da usare/studiare:
+
+BACK-END
+
+*linguaggio core: python
+*web framework : FastAPI
+*Application server: Uvicorn (FastAPI è solo il framework. Uvicorn è il server fisico in ascolto sulla porta di rete (es. la porta 8000) che traduce i byte in arrivo da internet in oggetti Python leggibili da FastAPI.
+*Validazione Dati Automatica: Pydantic
+*Motore Database: PostgreSQL
+*ORM: SQLAlchemy 2.0
+Versionamento DB: Alembic (Tipo git per databse)
+Sicurezza informatica ed autenticazione: Passlib e python-jose (crittografia unidirezionale (hashing) per le password e a generare JSON Web Tokens per mantenere gli utenti loggati in modo stateless (senza salvare le sessioni nel database)
+Integrazione Pagamenti: Stripe Python SDK
+
+
+
+FRONT-END
+Libreria core: React.js 
+Meta-Framework: Next.js (eact puro genera pagine "vuote" che si riempiono solo dopo il caricamento, distruggendo l'indicizzazione di Google. Next.js introduce il Server-Side Rendering (SSR): pre-compila le pagine delle carte Pokemon sul server prima di inviarle al client, garantendo una SEO perfetta. La SEO è la Search engine optimization, algoritmo che li fa spunatre in alto su google)
+linguaggio core: TypeScript
+Styling Engine: Tailwind CSS (integrato direttamente nel codice)
+Gestione di Rete: TanStack Query (È il ponte tra il frontend e FastAPI. Gestisce automaticamente il caricamento (mostrando gli spinner di loading), la cache (se l'utente torna indietro alla pagina precedente, i dati non vengono riscaricati ma presi dalla memoria) e la sincronizzazione in background.)
+Gestione dello Stato Globale: Zustand (o React Context) (Se un utente aggiunge Charizard al carrello nella pagina "Catalogo", il numero sull'icona del carrello nella barra di navigazione in alto deve aggiornarsi istantaneamente. Zustand permette a componenti completamente distanti di leggere e scrivere sulle stesse variabili in tempo reale.)
+
+
+Componenti Interfaccia (Libreria UI): shadcn/ui (consigliata) IMPORTANRE PER LO STYLING DELLA LENDING PAGE
+. Offre componenti accessibili e pre-costruiti (menù a tendina, modali, bottoni, tabelle) di cui tu hai il pieno controllo del codice sorgente per personalizzarli.
