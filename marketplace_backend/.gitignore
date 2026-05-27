@@ -1,0 +1,21 @@
+# Ambiente virtuale
+venv/
+.venv/
+env/
+
+# Variabili d'ambiente - MAI su GitHub
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# PyCharm
+.idea/
+
+# Database locale
+*.db
+*.sqlite3
