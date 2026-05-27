@@ -5,6 +5,7 @@ env/
 
 # Variabili d'ambiente - MAI su GitHub
 .env
+.idea/
 
 # Python
 __pycache__/
@@ -19,3 +20,4 @@ __pycache__/
 # Database locale
 *.db
 *.sqlite3
+
