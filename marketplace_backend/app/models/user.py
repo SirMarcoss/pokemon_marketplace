@@ -18,7 +18,12 @@ class User(Base):
     #mapped_column = specific info about the column
 
 
+
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.email!r}"
 
-    #method for good format when printed in the terminal
+    # __repr__ makes the object human-readable when printed in the terminal.
+    # Without it, Python would show a useless memory address like:
+    # <app.models.product_variants.ProductVariant object at 0x10f3a2b50>
+    # With it, you see the actual data — very useful for debugging.
+    # -> str is a return type hint: it tells Python (and the developer) that this function returns a string.
