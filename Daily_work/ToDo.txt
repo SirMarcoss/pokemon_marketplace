@@ -1,1 +1,0 @@
--implementare funzioni molto generali in python
