@@ -3,9 +3,10 @@ from jose import jwt
 from datetime import datetime, timedelta
 from app.core.config import settings
 
-key = settings.SECRETE_KEY
 
+key = settings.SECRETE_KEY
 pwd_context = CryptContext(schemes=["bcrypt"])
+
 
 def hash_password (password):
     secrete_pwd = pwd_context.hash(password) #funzione di hashing della password
@@ -14,6 +15,7 @@ def hash_password (password):
 
 def verify_password(plain_password, hash_password):
     return pwd_context.verify(plain_password, hash_password)
+
 
 def create_access_token(data: dict):
     to_encode = data.copy()
