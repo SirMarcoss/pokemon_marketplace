@@ -1,0 +1,85 @@
+Premessa--
+
+questo db e' stato scritto totalmente da ai, sotto istruzioni rigide e mirate del developer, revisionato, attenzionato e modificato.
+
+
+
+# Schema Database — E-commerce B2C Single-Vendor
+
+## Panoramica
+
+Schema relazionale PostgreSQL progettato per un'applicazione e-commerce B2C a venditore singolo. L'architettura segue la Terza Forma Normale (3NF) e privilegia l'integrità dei dati finanziari, la consistenza transazionale e l'estensibilità futura. Lo schema costituisce il fondamento del data layer su cui si appoggiano il backend FastAPI e il frontend Next.js.
+
+---
+
+## Decisioni architetturali chiave
+
+**Prezzi in centesimi interi** — tutti i valori monetari sono memorizzati come `INT` in centesimi (es. 19,99€ → `1999`). Elimina gli errori di arrotondamento floating-point e si allinea nativamente al formato richiesto da Stripe SDK.
+
+**Colonna generata per `price_gross_cents`** — il prezzo lordo è una `GENERATED ALWAYS AS ... STORED` column, calcolata automaticamente dal database a partire da `price_net_cents` e `tax_rate`. È strutturalmente impossibile che il valore sia incoerente con i suoi componenti. Il database ne ha il controllo esclusivo — qualsiasi tentativo di scrittura diretta viene rifiutato con errore.
+
+**Snapshot storico sugli ordini** — la tabella `order_items` cristallizza nome prodotto, SKU, prezzo netto, aliquota IVA e prezzo lordo al momento dell'acquisto. Le modifiche future al catalogo non alterano retroattivamente la verità fiscale degli ordini passati.
+
+**Two-step publish** — `products.is_active` ha default `FALSE`. Un prodotto appena inserito è invisibile al catalogo pubblico finché l'amministratore non lo attiva esplicitamente. Questo pattern previene la pubblicazione accidentale di prodotti con dati errati e azzera la finestra di vulnerabilità in cui un utente potrebbe acquistare a un prezzo sbagliato prima che l'errore venga corretto.
+
+**Soft delete** — la rimozione di un prodotto dal catalogo avviene in due fasi: disattivazione tramite `is_active = FALSE`, seguita dall'eliminazione fisica solo a zero transazioni in volo. Previene la race condition in cui un pagamento Stripe viene completato su un prodotto eliminato nel medesimo istante, generando un ordine in stato inconsistente.
+
+**ENUM per gli stati** — `payment_status` e `fulfillment_status` sono tipi enumerati definiti a livello di database. Valori non ammessi vengono rifiutati prima ancora di raggiungere il backend applicativo.
+
+**`TIMESTAMP WITH TIME ZONE`** — tutti i timestamp sono `TIMESTAMPTZ`, memorizzati internamente in UTC. Elimina ambiguità in caso di migrazione del server o cambio di fuso orario dell'infrastruttura.
+
+**Guest checkout nativo** — `orders.user_id` è nullable per design, non per omissione. Supporta acquisti senza registrazione. La colonna è predisposta per diventare `FOREIGN KEY` verso la futura tabella `users` tramite migration Alembic, senza modifiche strutturali allo schema esistente.
+
+---
+
+## Struttura delle tabelle
+
+**`admins`** — credenziali del pannello di amministrazione. Separata dagli utenti consumer per principio di separazione dei privilegi.
+
+**`categories`** — tassonomia piatta del catalogo. Il campo `slug` garantisce URL leggibili e univoci lato frontend.
+
+**`products`** — entità master del prodotto. Contiene i dati condivisi tra varianti (titolo, descrizione, categoria). I campi `created_at` e `updated_at` tracciano il ciclo di vita del record, con `updated_at` mantenuto automaticamente dal trigger `trg_products_updated_at`.
+
+**`product_variants`** — oggetto fisico acquistabile (SKU). Ogni variante eredita il prodotto master e aggiunge attributi fisici (`size`, `color`), pricing e disponibilità di magazzino. Il vincolo `CHECK (stock >= 0)` previene stock negativi a livello di database, indipendentemente dalla logica applicativa. Il campo `updated_at` è mantenuto automaticamente dal trigger `trg_variants_updated_at`.
+
+**`orders`** — intestazione dell'ordine. Contiene lo snapshot dell'indirizzo di spedizione e il riferimento al `PaymentIntent` di Stripe. Il campo `payment_status` transita a `paid` esclusivamente alla ricezione del webhook Stripe verificato lato server, prevenendo qualsiasi manipolazione client-side del prezzo.
+
+**`order_items`** — righe dell'ordine. Record immutabili che costituiscono il documento fiscale dell'acquisto. Il riferimento a `variant_id` è nullable con `ON DELETE SET NULL`: se una variante viene rimossa dal catalogo, la voce storica dell'ordine sopravvive intatta con tutti i dati al momento dell'acquisto.
+
+---
+
+## Trigger
+
+La funzione `set_updated_at()` è definita una volta sola in `plpgsql` e agganciata a tutte le tabelle che richiedono tracciamento delle modifiche. Si attiva `BEFORE UPDATE FOR EACH ROW`, intercetta la riga prima della scrittura su disco e aggiorna `NEW.updated_at` a `NOW()`. Il meccanismo è indipendente dal backend — funziona correttamente anche in caso di query dirette sul database.
+
+`trg_products_updated_at` — agganciato a `products`. Si attiva ad ogni modifica di titolo, descrizione, categoria o stato di attivazione.
+
+`trg_variants_updated_at` — agganciato a `product_variants`. Si attiva ad ogni modifica di prezzo, stock, immagini o stato di attivazione. Particolarmente rilevante per l'invalidazione futura della cache lato Next.js.
+
+---
+
+## Indici
+
+Gli indici coprono tre categorie di accesso.
+
+**Join frequenti** — `category_id`, `product_id`, `order_id`, `variant_id` accelerano le query relazionali più comuni tra catalogo, varianti e ordini. L'indice su `variant_id` in `order_items` supporta specificamente le query di analisi vendite per SKU nel pannello amministrativo.
+
+**Ricerca operativa** — `customer_email` supporta il lookup degli ordini per il supporto clienti e il guest checkout senza richiedere una tabella `users`.
+
+**Indici parziali su `is_active`** — indicizzano esclusivamente le righe con `is_active = TRUE`, riducendo la dimensione dell'indice e aumentando le performance delle query di catalogo, che filtrano quasi sempre su questo predicato. I prodotti disattivati non occupano spazio nell'indice.
+
+L'indice su `stripe_intent_id` è omesso perché il vincolo `UNIQUE` lo genera automaticamente in PostgreSQL. L'indice su `user_id` è posticipato alla migration che implementerà la tabella `users`, poiché indicizzare una colonna attualmente sempre `NULL` non produce benefici.
+
+---
+
+## Estensibilità futura
+
+Lo schema è predisposto per le seguenti evoluzioni senza richiedere modifiche distruttive.
+
+**Tabella `users`** — `orders.user_id UUID` diventa `FOREIGN KEY REFERENCES users(id)` tramite `ALTER TABLE`, con aggiunta contestuale dell'indice `idx_orders_user_id`.
+
+**Tabelle `carts` e `cart_items`** — carrello persistente su database per supporto multi-dispositivo e analisi degli abbandoni, previsto nel Task 2.3 del backlog di sviluppo.
+
+**Trigger aggiuntivi** — la funzione `set_updated_at()` è riutilizzabile su qualsiasi tabella futura dotata di colonna `updated_at`, senza riscrivere la logica.
+
+**Estensione `pgcrypto`** — necessaria solo su PostgreSQL 12 e precedenti. Da PostgreSQL 13 in poi `gen_random_uuid()` è built-in e non richiede estensioni aggiuntive.
