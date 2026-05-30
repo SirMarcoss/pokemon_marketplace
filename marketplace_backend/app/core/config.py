@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
 
     DATABASE_URL : str
@@ -10,5 +11,6 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env")
 
-settings = Settings() #usa quello stampo per creare un oggetto reale in memoria,
-                        # che legge il .env e tiene i valori pronti.
+
+settings = Settings() #It uses that template to create an actual object in memory,
+                      # which reads the .env file and keeps the values ready.
