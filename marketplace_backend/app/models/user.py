@@ -1,13 +1,9 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import func
 from datetime import datetime
 from sqlalchemy import UUID
 import uuid
-
-
-class Base(DeclarativeBase):
-    pass
-#must have to generate tables
+from app.models.base import Base
 
 
 class User(Base):

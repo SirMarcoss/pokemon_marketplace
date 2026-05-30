@@ -1,25 +1,24 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import declarative_base
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.core.config import settings
 
 
 # Creating connection engin to the db
-motore_database = create_engine(settings.DATABASE_URL)
+motore_database = create_async_engine(settings.DATABASE_URL)
 
 
-# Creating the single session per user
-SessionLocal = sessionmaker(autocommit = False, autoflush = False, bind = motore_database)
+# Creating a single session per user
+SessionLocal = async_sessionmaker(
+    motore_database,
+    autocommit=False,
+    autoflush=False,
+    expire_on_commit=False
+)
 # Removing autocommit gives you full control over saving operations
 # Autoflush prepares information for autocommit, keeping it active makes no sense
 
 
-Base = declarative_base()
+async def get_db():
+    async with SessionLocal() as db:
+        yield db
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db  # Regardless of whether the function is finished or not(crash), the db closes
-    finally:
-        db.close()
+        # Regardless of whether the function is finished or not(crash), the db closes
