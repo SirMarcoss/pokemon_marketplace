@@ -15,3 +15,5 @@ from app.models.admin import Admin
 from app.models.categories import Categories
 from app.models.products import Product
 from app.models.product_variants import ProductVariants
+from app.models.orders import Orders
+from app.models.order_items import OrderItems
