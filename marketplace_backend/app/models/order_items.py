@@ -1,15 +1,16 @@
 from datetime import datetime
 from decimal import Decimal
+import uuid
 from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import  String, func, UUID, Numeric, Integer
+from sqlalchemy.types import  String, UUID, Numeric, Integer
 from typing import Optional
-import uuid
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey
+from  sqlalchemy.sql.functions import func
 
 
 
-class order_items(Base):
+class OrderItems(Base):
     __tablename__ = "order_items"
 
     __table_args__ = (
@@ -29,6 +30,7 @@ class order_items(Base):
     tax_rate_at_purchase: Mapped[Decimal]= mapped_column(Numeric(5, 2), nullable=False)
     price_gross_cents_at_purchase: Mapped[int]= mapped_column(nullable=False)
     created_at: Mapped[datetime]= mapped_column(server_default=func.now())
+
 
     def __repr__(self) -> str:
         return (f"order_items(id={self.id!r}, order_id={self.order_id!r}, variant_id={self.variant_id!r}, "
