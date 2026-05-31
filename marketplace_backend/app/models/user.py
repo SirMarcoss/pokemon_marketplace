@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import func
+from sqlalchemy.sql.functions import func
 from datetime import datetime
-from sqlalchemy import UUID
+from sqlalchemy.sql.sqltypes import UUID
 import uuid
 from app.models.base import Base
 
@@ -16,7 +16,6 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now()) #timestamp = NOW
     #mapped = base type
     #mapped_column = specific info about the column
-
 
 
     def __repr__(self) -> str:

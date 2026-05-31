@@ -41,6 +41,7 @@ class ProductVariants(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
+
     def __repr__(self) -> str:
         return (f"id(id={self.id!r}, product_id={self.product_id!r}, sku{self.sku!r}, size={self.size!r},"
                 f"color={self.color!r}, price_net_cents={self.price_net_cents!r}, taxe_rate{self.tax_rate!r}"

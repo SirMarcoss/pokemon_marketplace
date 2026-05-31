@@ -9,5 +9,6 @@ class Categories(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     slug: Mapped[str] = mapped_column(nullable=False, unique=True)
 
+
     def __repr__(self) -> str:
         return f"User(id={self.id!r}, name={self.name!r}, slug={self.slug!r}"

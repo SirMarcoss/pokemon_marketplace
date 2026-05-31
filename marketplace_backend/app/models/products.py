@@ -1,6 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey, func
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.functions import func
 from datetime import datetime
 from app.models.base import Base
 
