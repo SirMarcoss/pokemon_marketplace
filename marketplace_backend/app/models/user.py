@@ -1,32 +1,52 @@
 from typing import Optional
+from sqlalchemy import Enum as SAEnum, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
+from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
-from sqlalchemy.sql.sqltypes import UUID
+import enum
 import uuid
 from app.models.base import Base
+
+
+class UserRoleEnum(enum.Enum):
+    CUSTOMER = "customer"
+    ADMIN = "admin"
 
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email: Mapped[str] = mapped_column(nullable=False, unique=True) #nullable = NOTNULL
-    password_hash: Mapped[str] = mapped_column(nullable=False)
-    first_name: Mapped[Optional[str]]
-    last_name: Mapped[Optional[str]]
-    role: Mapped[str] = mapped_column(nullable=False, default='CUSTOMER')
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())#timestamp = NOW
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    #mapped = base type
-    #mapped_column = specific info about the column
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    first_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    last_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    role: Mapped[UserRoleEnum] = mapped_column(
+        SAEnum(
+            UserRoleEnum,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            name="user_role_enum",
+        ),
+        nullable=False,
+        default=UserRoleEnum.CUSTOMER,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.email!r}"
-
+        return f"<User(id={self.id!r}, email={self.email!r}, role={self.role.value!r})>"
     # __repr__ makes the object human-readable when printed in the terminal.
     # Without it, Python would show a useless memory address like:
     # <app.models.product_variants.ProductVariant object at 0x10f3a2b50>
     # With it, you see the actual data — very useful for debugging.
     # -> str is a return type hint: it tells Python (and the developer) that this function returns a string.
+

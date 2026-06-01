@@ -3,12 +3,23 @@ from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey, Computed
-from sqlalchemy.sql.sqltypes import Numeric
+from sqlalchemy.sql.sqltypes import Numeric, DateTime, Integer, Enum as SAEnum, Text
 from datetime import datetime
 from app.models.base import Base
+import enum
 
 
-class ProductVariants(Base):
+class CardConditionEnum(enum.Enum):
+    MINT = "mint"
+    NEAR_MINT = "near_mint"
+    EXCELLENT = "excellent"
+    GOOD = "good"
+    LIGHTLY_PLAYED = "lightly_played"
+    PLAYED = "played"
+    POOR = "poor"
+
+
+class ProductVariant(Base):
     __tablename__ = "product_variants"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -17,13 +28,22 @@ class ProductVariants(Base):
     language: Mapped[str] = mapped_column(default="IT")
     is_foil: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_first_edition: Mapped[bool] = mapped_column(nullable=False, default=False)
+    version: Mapped[int] = mapped_column(Integer,nullable=False, default=1)
+    card_condition: Mapped[Optional[CardConditionEnum]] = mapped_column(
+        SAEnum(
+            CardConditionEnum,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            name="card_condition_enum",
+        ),
+        nullable=True,
+    )
     price_net_cents: Mapped[int] = mapped_column(
         CheckConstraint("price_net_cents > 0", name="price_net_positivo"),
         nullable=False)
     tax_rate: Mapped[Decimal] = mapped_column(
         Numeric(5, 2),
         CheckConstraint("tax_rate >=0 AND tax_rate <=100",
-        name="tax_rate_valida"), nullable=False, default=22.0)
+        name="tax_rate_valida"), nullable=False, default=Decimal("22.00"))
 
     # Computed column: price_gross_cents is never written manually.
     # The database calculates it automatically using price_net_cents and tax_rate.
@@ -37,16 +57,20 @@ class ProductVariants(Base):
     stock: Mapped[int] = mapped_column(
         CheckConstraint("stock >= 0", name="stock_non_negativo"),nullable=False,default=0)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
-    img_master_url: Mapped[Optional[str]]
-    img_thumb_url: Mapped[Optional[str]]
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    img_master_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    img_thumb_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
     def __repr__(self) -> str:
-        return (f"id(id={self.id!r}, product_id={self.product_id!r}, sku{self.sku!r}, language={self.language!r},"
-                f"is foil={self.is_foil!r}, is first edition={self.is_first_edition!r},"
-                f" price_net_cents={self.price_net_cents!r}, taxe_rate{self.tax_rate!r}"
-                f"price_gross_cents={self.price_gross_cents!r}, stock={self.stock!r}, is_active{self.is_active!r}"
-                f"img_master_url={self.img_master_url!r}, img_thumb_url={self.img_thumb_url!r},"
-                f" created_at{self.created_at!r}, updated_at{self.updated_at!r}")
+        return (f"product_variant=(id={self.id!r}, product_id={self.product_id!r}, sku={self.sku!r},"
+                f" language={self.language!r}, price_net_cents={self.price_net_cents!r},"
+                f" price_gross_cents={self.price_gross_cents!r}")

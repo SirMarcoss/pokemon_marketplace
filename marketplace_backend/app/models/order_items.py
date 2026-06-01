@@ -3,18 +3,20 @@ from decimal import Decimal
 import uuid
 from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.types import  String, UUID, Numeric, Integer
+from sqlalchemy.types import  String, Numeric, Integer
+from sqlalchemy.dialects.postgresql import UUID
 from typing import Optional
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey
 from  sqlalchemy.sql.functions import func
+from sqlalchemy.sql.sqltypes import DateTime
 
 
 
-class OrderItems(Base):
+class OrderItem(Base):
     __tablename__ = "order_items"
 
     __table_args__ = (
-        CheckConstraint("quantity > 0", name="quantita_positiva"),
+        CheckConstraint("quantity > 0", name="order_qty_positiva"),
         CheckConstraint("price_net_cents_at_purchase > 0", name="snap_net_positivo"),
         CheckConstraint("price_gross_cents_at_purchase > 0", name="snap_gross_positivo"),
     )
@@ -29,7 +31,8 @@ class OrderItems(Base):
     price_net_cents_at_purchase: Mapped[int]= mapped_column(nullable=False)
     tax_rate_at_purchase: Mapped[Decimal]= mapped_column(Numeric(5, 2), nullable=False)
     price_gross_cents_at_purchase: Mapped[int]= mapped_column(nullable=False)
-    created_at: Mapped[datetime]= mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
 
 
     def __repr__(self) -> str:

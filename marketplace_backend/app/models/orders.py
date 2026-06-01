@@ -50,11 +50,23 @@ class Order(Base):
     stripe_intent_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
 
     payment_status: Mapped[PaymentStatusEnum] = mapped_column(
-        SAEnum(PaymentStatusEnum), nullable=False, default=PaymentStatusEnum.PENDING
+        SAEnum(
+            PaymentStatusEnum,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            name="payment_status_enum",
+        ),
+        nullable=False,
+        default=PaymentStatusEnum.PENDING,
     )
 
     fulfillment_status: Mapped[FulfillmentStatusEnum] = mapped_column(
-        SAEnum(FulfillmentStatusEnum), nullable=False, default=FulfillmentStatusEnum.UNFULFILLED
+        SAEnum(
+            FulfillmentStatusEnum,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+            name="fulfillment_status_enum",
+        ),
+        nullable=False,
+        default=FulfillmentStatusEnum.UNFULFILLED,
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

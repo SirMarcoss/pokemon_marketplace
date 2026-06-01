@@ -3,12 +3,12 @@ from app.core.config import settings
 
 
 # Creating connection engin to the db
-motore_database = create_async_engine(settings.DATABASE_URL)
+engine = create_async_engine(settings.DATABASE_URL)
 
 
 # Creating a single session per user
 SessionLocal = async_sessionmaker(
-    motore_database,
+    engine,
     autocommit=False,
     autoflush=False,
     expire_on_commit=False

@@ -11,8 +11,12 @@
 
 
 from app.models.base import Base
-from app.models.categories import Categories
+from app.models.user import User
+from app.models.categories import Category
+from app.models.expansions import Expansion
 from app.models.products import Product
-from app.models.product_variants import ProductVariants
-from app.models.orders import Orders
-from app.models.order_items import OrderItems
+from app.models.product_variants import ProductVariant
+from app.models.carts import Cart
+from app.models.cart_items import CartItem
+from app.models.orders import Order
+from app.models.order_items import OrderItem
