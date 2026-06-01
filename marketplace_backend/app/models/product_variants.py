@@ -14,8 +14,9 @@ class ProductVariants(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="RESTRICT"), nullable=False)
     sku: Mapped[str] = mapped_column(unique=True, nullable=False)
-    size: Mapped[Optional[str]]
-    color: Mapped[Optional[str]]
+    language: Mapped[str] = mapped_column(default="IT")
+    is_foil: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_first_edition: Mapped[bool] = mapped_column(nullable=False, default=False)
     price_net_cents: Mapped[int] = mapped_column(
         CheckConstraint("price_net_cents > 0", name="price_net_positivo"),
         nullable=False)
@@ -43,8 +44,9 @@ class ProductVariants(Base):
 
 
     def __repr__(self) -> str:
-        return (f"id(id={self.id!r}, product_id={self.product_id!r}, sku{self.sku!r}, size={self.size!r},"
-                f"color={self.color!r}, price_net_cents={self.price_net_cents!r}, taxe_rate{self.tax_rate!r}"
+        return (f"id(id={self.id!r}, product_id={self.product_id!r}, sku{self.sku!r}, language={self.language!r},"
+                f"is foil={self.is_foil!r}, is first edition={self.is_first_edition!r},"
+                f" price_net_cents={self.price_net_cents!r}, taxe_rate{self.tax_rate!r}"
                 f"price_gross_cents={self.price_gross_cents!r}, stock={self.stock!r}, is_active{self.is_active!r}"
                 f"img_master_url={self.img_master_url!r}, img_thumb_url={self.img_thumb_url!r},"
                 f" created_at{self.created_at!r}, updated_at{self.updated_at!r}")

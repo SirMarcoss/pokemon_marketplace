@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 from datetime import datetime
@@ -12,8 +13,11 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(nullable=False, unique=True) #nullable = NOTNULL
     password_hash: Mapped[str] = mapped_column(nullable=False)
+    first_name: Mapped[Optional[str]]
+    last_name: Mapped[Optional[str]]
     role: Mapped[str] = mapped_column(nullable=False, default='CUSTOMER')
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now()) #timestamp = NOW
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())#timestamp = NOW
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
     #mapped = base type
     #mapped_column = specific info about the column
 

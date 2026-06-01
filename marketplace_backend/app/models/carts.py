@@ -1,0 +1,42 @@
+import uuid
+from datetime import datetime
+from sqlalchemy import CheckConstraint, ForeignKey, String, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql.functions import func
+from app.models.base import Base
+
+
+class Cart(Base):
+    __tablename__ = "carts"
+
+    __table_args__ = (
+        # Un carrello DEVE appartenere a un utente loggato OPPURE a una sessione guest.
+        CheckConstraint(
+            "user_id IS NOT NULL OR session_id IS NOT NULL",
+            name="cart_owner_check"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=True
+    )
+
+    # Nullable (Utente loggato potrebbe non averlo), limitato a 255 caratteri
+    session_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+
+    def __repr__(self) -> str:
+        return f"<Cart(id={self.id!r}, user_id={self.user_id!r}, session_id={self.session_id!r})>"
