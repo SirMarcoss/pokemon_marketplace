@@ -23,8 +23,8 @@ class OrderItem(Base):
 
 
     id: Mapped[int]= mapped_column(Integer, primary_key=True, autoincrement=True)
-    order_id: Mapped[uuid.UUID]= mapped_column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="RESTRICT"), nullable=False)
-    variant_id: Mapped[Optional[int]]= mapped_column(ForeignKey("product_variants.id", ondelete="SET NULL"))
+    order_id: Mapped[uuid.UUID]= mapped_column(UUID(as_uuid=True), ForeignKey("orders.id", ondelete="RESTRICT"), nullable=False, index=True)
+    variant_id: Mapped[Optional[int]]= mapped_column(ForeignKey("product_variants.id", ondelete="SET NULL"), index=True)
     quantity: Mapped[int]= mapped_column(nullable=False)
     product_name_at_purchase: Mapped[str]= mapped_column(String(255), nullable=False)
     sku_at_purchase:  Mapped[str]= mapped_column(String(100), nullable=False)

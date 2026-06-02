@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 from typing import Any
-from sqlalchemy import CheckConstraint, Enum as SAEnum, ForeignKey, Integer, String, Text, DateTime
+from sqlalchemy import CheckConstraint, Enum as SAEnum, ForeignKey, Integer, String, Text, DateTime, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
@@ -34,10 +34,10 @@ class Order(Base):
         CheckConstraint("total_amount_cents > 0", name="total_positivo"),
     )
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
 
     # Mapped[uuid.UUID | None] è obbligatorio perché ondelete="SET NULL" rende la colonna nullabile
-    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
 
     customer_email: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -56,7 +56,7 @@ class Order(Base):
             name="payment_status_enum",
         ),
         nullable=False,
-        default=PaymentStatusEnum.PENDING,
+        server_default="pending",
     )
 
     fulfillment_status: Mapped[FulfillmentStatusEnum] = mapped_column(
@@ -66,7 +66,7 @@ class Order(Base):
             name="fulfillment_status_enum",
         ),
         nullable=False,
-        default=FulfillmentStatusEnum.UNFULFILLED,
+        server_default="unfulfilled",
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

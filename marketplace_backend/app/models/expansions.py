@@ -14,8 +14,8 @@ class Expansion(Base):
         nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    release_date: Mapped[date | None] = mapped_column(Date, nullable=True, default=None)
-    total_cards: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
+    release_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    total_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
     def __repr__(self) -> str:
