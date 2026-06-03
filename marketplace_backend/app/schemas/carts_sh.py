@@ -1,5 +1,6 @@
 from app.schemas.cart_items_sh import CartItemBaseRead
-from pydantic import BaseModel, ConfigDict
+from pydantic.main import BaseModel
+from pydantic.config import ConfigDict
 from typing import Optional
 from uuid import UUID
 from datetime import datetime

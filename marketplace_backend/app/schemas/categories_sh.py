@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic.main import BaseModel
+from pydantic.config import ConfigDict
+from pydantic.fields import Field
 from typing import Optional
 
 

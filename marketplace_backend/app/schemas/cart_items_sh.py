@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic.main import BaseModel
+from pydantic.fields import Field
+from pydantic.config import ConfigDict
 from typing import Optional
 from datetime import datetime
 from uuid import UUID
@@ -20,5 +22,6 @@ class CartItemBaseRead(BaseModel):
     variant_id: int
     quantity: int
     added_at: datetime
+
 
     model_config = ConfigDict(from_attributes=True)
