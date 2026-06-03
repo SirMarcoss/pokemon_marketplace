@@ -28,10 +28,12 @@ class UserAdminUpdate(BaseModel):
 
 class UserRead(BaseModel):
     id: UUID
-    email: str
+    email: EmailStr
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     role: UserRoleEnum
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
