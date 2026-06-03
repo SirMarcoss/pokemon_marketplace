@@ -7,7 +7,7 @@ from datetime import datetime
 
 class CartBaseRead(BaseModel):
     id: UUID
-    user_id: UUID
+    user_id: Optional[UUID]
     session_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
