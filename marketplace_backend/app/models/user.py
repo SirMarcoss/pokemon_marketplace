@@ -1,8 +1,9 @@
 from typing import Optional
-from sqlalchemy import Enum as SAEnum, DateTime, String
+from sqlalchemy import Enum as SAEnum, DateTime, String, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql.functions import func
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql.schema import Index
 from datetime import datetime
 import enum
 import uuid
@@ -17,7 +18,13 @@ class UserRoleEnum(enum.Enum):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    __table_args__ = (
+        Index("idx_users_email", "email", postgresql_where=text("deleted_at IS NULL")),
+    )
+
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
@@ -29,7 +36,7 @@ class User(Base):
             name="user_role_enum",
         ),
         nullable=False,
-        default=UserRoleEnum.CUSTOMER,
+        server_default="customer",
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False)

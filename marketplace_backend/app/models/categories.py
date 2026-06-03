@@ -1,6 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base
+from sqlalchemy import Text
 
 
 class Category(Base):
@@ -9,7 +10,7 @@ class Category(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
     slug: Mapped[str] = mapped_column(nullable=False, unique=True)
-    description: Mapped[Optional[str]] = mapped_column(nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
 
     def __repr__(self) -> str:
