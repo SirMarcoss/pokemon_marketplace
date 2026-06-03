@@ -10,7 +10,7 @@ class CartItemBaseCreate(BaseModel):
 
 
 class CartItemBaseUpdate(BaseModel):
-    variant_id: Optional[int] = None
+    variant_id: [int] = None
     quantity: Optional[int] = Field(None, gt=0, description="Quantity must be greater than zero")
 
 
