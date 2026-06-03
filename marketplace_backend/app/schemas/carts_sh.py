@@ -12,6 +12,6 @@ class CartBaseRead(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    items: list[CartItemBaseRead] = [] #riceives a list containing the products in the cart
+    items: list[CartItemBaseRead] = [] #receives a list containing the products in the cart
 
     model_config = ConfigDict(from_attributes=True)
