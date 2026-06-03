@@ -1,6 +1,6 @@
 from pydantic.main import BaseModel, ConfigDict
 from pydantic.fields import Field
-from pydantic.config import BaseConfig
+from pydantic.config import ConfigDict
 from datetime import date
 from typing import Optional
 
