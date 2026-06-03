@@ -21,12 +21,12 @@ class OrderItemsRead(BaseModel):
     id: int
     order_id: UUID
     variant_id: Optional[int] = None
-    quantity: int = Field(gt=0, description="Quantity must be greater than zero")
+    quantity: int
     product_name_at_purchase: str
     sku_at_purchase: str
-    price_net_cents_at_purchase: int = Field(gt=0, description="Net price in cents must be greater than zero")
+    price_net_cents_at_purchase: int
     tax_rate_at_purchase: Decimal
-    price_gross_cents_at_purchase: int =  Field(gt=0, description="Gross price in cents must be greater than zero")
+    price_gross_cents_at_purchase: int
     created_at: datetime
 
 
