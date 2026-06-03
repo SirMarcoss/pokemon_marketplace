@@ -6,13 +6,11 @@ from typing import Optional
 
 class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    slug: str = Field(min_length=1, max_length=100)
     description: Optional[str] = None
 
 
 class CategoryUpdate(BaseModel):
     name: Optional[str] = Field(default=None, min_length=1, max_length=100)
-    slug: Optional[str] = Field(default=None, min_length=1, max_length=100)
     description: Optional[str] = None
 
 
