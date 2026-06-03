@@ -1,5 +1,6 @@
 from pydantic.main import BaseModel
 from pydantic.config import ConfigDict
+from pydantic.types import EmailStr
 from pydantic.fields import Field
 from app.models.orders import  FulfillmentStatusEnum, PaymentStatusEnum
 from uuid import UUID
@@ -11,6 +12,7 @@ class Address:
 
 
 class OrderCreate(BaseModel):
+    customer_email: EmailStr = Field(..., max_length=255, description="Email of the customer placing the order")
     shipping_address : Address
     billing_address : Address
     notes: str | None = Field(None, max_length=1000, description="Optional notes for the order, max length 1000 characters")
@@ -25,7 +27,7 @@ class OrderUpdate(BaseModel):
 class OrderRead(BaseModel):
     id: UUID
     user_id: UUID | None
-    customer_email: str = Field(..., max_length=255)
+    customer_email: EmailStr = Field(..., max_length=255)
     shipping_address: Address
     billing_address: Address
     total_amount_cents: int
@@ -35,5 +37,6 @@ class OrderRead(BaseModel):
     notes: str | None = Field(None, max_length=1000)
     created_at: datetime
     updated_at: datetime
+
 
     model_config = ConfigDict(from_attributes=True)
