@@ -22,6 +22,15 @@ class CardConditionEnum(enum.Enum):
 class ProductVariant(Base):
     __tablename__ = "product_variants"
 
+
+    __table_args__ = (
+        CheckConstraint("price_net_cents > 0", name="price_net_positivo"),
+        CheckConstraint("tax_rate >=0 AND tax_rate <=100",
+        name="tax_rate_valida"),
+        CheckConstraint("stock >= 0", name="stock_non_negativo"),
+    )
+
+
     id: Mapped[int] = mapped_column(primary_key=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="RESTRICT"), nullable=False)
     sku: Mapped[str] = mapped_column(unique=True, nullable=False)
@@ -37,13 +46,8 @@ class ProductVariant(Base):
         ),
         nullable=True,
     )
-    price_net_cents: Mapped[int] = mapped_column(
-        CheckConstraint("price_net_cents > 0", name="price_net_positivo"),
-        nullable=False)
-    tax_rate: Mapped[Decimal] = mapped_column(
-        Numeric(5, 2),
-        CheckConstraint("tax_rate >=0 AND tax_rate <=100",
-        name="tax_rate_valida"), nullable=False, default=Decimal("22.00"))
+    price_net_cents: Mapped[int] = mapped_column(nullable=False)
+    tax_rate: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=Decimal("22.00"))
 
     # Computed column: price_gross_cents is never written manually.
     # The database calculates it automatically using price_net_cents and tax_rate.
@@ -54,8 +58,7 @@ class ProductVariant(Base):
     "CAST(ROUND(price_net_cents * (1 + tax_rate / 100.0)) AS INT)",
     persisted=True
 ))
-    stock: Mapped[int] = mapped_column(
-        CheckConstraint("stock >= 0", name="stock_non_negativo"),nullable=False,default=0)
+    stock: Mapped[int] = mapped_column(nullable=False,default=0)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
     img_master_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     img_thumb_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
