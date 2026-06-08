@@ -28,7 +28,7 @@ class OrderCreate(BaseModel):
     notes: str | None = Field(None, max_length=1000, description="Optional notes for the order, max length 1000 characters")
 
 
-class OrderUpdate(BaseModel):
+class OrderAdminUpdate(BaseModel):
     payment_status: PaymentStatusEnum | None = Field(None, description="Updated payment status for the order")
     fulfillment_status: FulfillmentStatusEnum | None = Field(None, description="Updated fulfillment status for the order")
     notes: str | None = Field(None, max_length=1000, description="Optional notes for the order, max length 1000 characters")

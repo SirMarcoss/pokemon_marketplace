@@ -8,7 +8,6 @@ from uuid import UUID
 
 class CartItemBaseCreate(BaseModel):
     quantity: int = Field(..., gt=0, description="Quantity must be greater than zero")
-    variant_id: int
 
 
 class CartItemBaseUpdate(BaseModel):

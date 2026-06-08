@@ -17,6 +17,7 @@ class ProductVariantCreate(BaseModel):
     img_thumb_url: Optional[str] = None
     card_condition: Optional[CardConditionEnum] = None
     price_net_cents: int = Field(gt=0, description="price_net_cents must be greater than zero")
+    tax_rate: Optional[Decimal] = Field(default=Decimal("22.00"), ge=0, le=100) #variable iva, it depens on the product
     stock: int = Field(ge=0, description="stock must be greater or equal then zero")
 
 

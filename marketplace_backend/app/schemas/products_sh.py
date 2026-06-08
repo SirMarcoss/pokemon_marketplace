@@ -5,7 +5,7 @@ from typing import Optional
 from datetime import datetime
 
 
-class ProductsCreate(BaseModel):
+class ProductCreate(BaseModel):
     title: str = Field(min_length=1, max_length=50)
     description: Optional[str] = None
     category_id: int
@@ -20,7 +20,7 @@ class ProductUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
-class ProductsRead(BaseModel):
+class ProductRead(BaseModel):
     id: int
     title: str
     slug: str

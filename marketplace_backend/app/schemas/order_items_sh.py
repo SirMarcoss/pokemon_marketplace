@@ -7,16 +7,6 @@ from typing import Optional
 from datetime import datetime
 
 
-class OrderItemCreate(BaseModel):
-    order_id: UUID
-    variant_id: int
-    quantity: int = Field(gt=0, description="Quantity must be greater than zero")
-
-
-class OrderItemUpdate(BaseModel):
-    quantity: Optional[int] = Field(default=None, gt=0, description="Quantity must be greater than zero")
-
-
 class OrderItemRead(BaseModel):
     id: int
     order_id: UUID
