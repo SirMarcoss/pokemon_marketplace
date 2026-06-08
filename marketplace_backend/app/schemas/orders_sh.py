@@ -12,7 +12,7 @@ class Address(BaseModel):
     number: str = Field(..., max_length=10)
     city: str = Field(..., min_length=1, max_length=100)
     province: str = Field(..., min_length=2, max_length=100)
-    postal_code: str = Field(..., regex=r'^\d{5}$')  # Italian format
+    postal_code: str = Field(..., pattern=r'^\d{5}$')  # Italian format
     country: str = Field(default="Italy", max_length=100)
     company_name: str | None = None
     tax_id: str | None = None  # Partita IVA
