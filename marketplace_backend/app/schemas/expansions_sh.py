@@ -15,7 +15,7 @@ class ExpansionCreate(BaseModel):
 class ExpansionUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     release_date: Optional[date] = None
-    total_cards: Optional[int] = Field (None, ge=0)
+    total_cards: Optional[int] = Field(None, ge=0)
     
 
 class ExpansionRead(BaseModel):

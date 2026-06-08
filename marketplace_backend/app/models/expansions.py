@@ -11,7 +11,8 @@ class Expansion(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     category_id: Mapped[int] = mapped_column(
         ForeignKey("categories.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
+        index=True #O(log N) con index al posto di O(N)
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     release_date: Mapped[date | None] = mapped_column(Date, nullable=True)

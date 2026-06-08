@@ -56,9 +56,9 @@ class ProductVariant(Base):
     # Formula: gross = net * (1 + tax_rate / 100)
     # persisted=True means the value is physically stored once on insert/update,
     # rather than being recalculated on every read.
-    price_gross_cents: Mapped[int] = mapped_column(Integer,
+    price_gross_cents: Mapped[Decimal] = mapped_column(Numeric(10, 2),
     Computed(
-    "CAST(ROUND(price_net_cents * (1 + tax_rate / 100.0)) AS INTEGER)",
+    "ROUND(CAST(price_net_cents AS NUMERIC(10,2)) / 100 * (1 + tax_rate / 100.0), 2) * 100",
     persisted=True
         ),
         nullable=False

@@ -1,13 +1,22 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic.fields import Field
+from pydantic.functional_validators import field_validator
 
 
 class Settings(BaseSettings):
 
     DATABASE_URL : str
-    SECRET_KEY : str
+    SECRET_KEY : str = Field(..., min_length=32)
     ALGORITHM : str
     ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
-    STRIPE_SECRET_KEY : str
+    STRIPE_SECRET_KEY : str = Field(..., min_length=32)
+
+    @field_validator('SECRET_KEY')
+    @classmethod
+    def validate_secret_key_entropy(cls, v):
+        if len(set(v)) < 8: #almeno 8 caratteri univoci
+            raise ValueError('SECRET_KEY must have sufficient entropy')
+        return v
 
     model_config = SettingsConfigDict(env_file=".env")
 

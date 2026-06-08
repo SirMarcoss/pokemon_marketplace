@@ -12,6 +12,7 @@ class Product(Base):
 
 
     __table_args__ = (
+        Index("idx_products_slug", "slug", unique=True),
         Index("idx_products_catalog", "id", postgresql_where=text("is_active = true AND deleted_at IS NULL")),
     )
 

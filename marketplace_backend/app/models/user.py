@@ -11,8 +11,8 @@ from app.models.base import Base
 
 
 class UserRoleEnum(enum.Enum):
-    CUSTOMER = "customer"
-    ADMIN = "admin"
+    CUSTOMER = "customer" #Regular buyer
+    ADMIN = "admin" #Store manager (inventory, orders)
 
 
 class User(Base):

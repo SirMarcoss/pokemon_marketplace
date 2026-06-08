@@ -7,8 +7,18 @@ from uuid import UUID
 from datetime import datetime
 
 
-class Address:
-    pass  #Da implementare con i campi necessari (street, city, state, zip_code, country, azienda, partita_iva, etc.)
+class Address(BaseModel):
+    street: str = Field(..., min_length=1, max_length=255)
+    number: str = Field(..., max_length=10)
+    city: str = Field(..., min_length=1, max_length=100)
+    province: str = Field(..., min_length=2, max_length=100)
+    postal_code: str = Field(..., regex=r'^\d{5}$')  # Italian format
+    country: str = Field(default="Italy", max_length=100)
+    company_name: str | None = None
+    tax_id: str | None = None  # Partita IVA
+
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class OrderCreate(BaseModel):

@@ -7,7 +7,7 @@ from app.models.product_variants import CardConditionEnum
 from datetime import datetime
 
 
-class ProductVariantsCreate(BaseModel):
+class ProductVariantCreate(BaseModel):
     product_id: int
     sku: str
     language: Optional[str] = Field(default=None, max_length=5)
@@ -20,7 +20,7 @@ class ProductVariantsCreate(BaseModel):
     stock: int = Field(ge=0, description="stock must be greater or equal then zero")
 
 
-class ProductVariantsUpdate(BaseModel):
+class ProductVariantUpdate(BaseModel):
     is_foil: Optional[bool] = None
     card_condition: Optional[CardConditionEnum] = None
     sku: Optional[str] = None
@@ -31,7 +31,7 @@ class ProductVariantsUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 
-class ProductVariantsRead(BaseModel):
+class ProductVariantRead(BaseModel):
     id: int
     product_id: int
     sku: str

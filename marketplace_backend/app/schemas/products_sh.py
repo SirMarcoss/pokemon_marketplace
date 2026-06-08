@@ -12,7 +12,7 @@ class ProductsCreate(BaseModel):
     expansion_id: Optional[int] = None
 
 
-class ProductsUpdate(BaseModel):
+class ProductUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=50)
     description: Optional[str] = None
     category_id: Optional[int] = None
