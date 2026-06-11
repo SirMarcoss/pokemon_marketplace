@@ -11,7 +11,7 @@ app = FastAPI(
 
 @app.get("/") # the function right below is in charge of handling requests that go to: the path (/)
 async def root(): #async function
-    return {"message": "Tutto ok" }
+    return {"message": "Tutto ok"}
 
 # @(decorator) tells FastAPI that the function below corresponds to the path / with an operation get
 

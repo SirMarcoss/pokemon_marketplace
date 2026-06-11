@@ -18,9 +18,6 @@ class Address(BaseModel):
     tax_id: str | None = None  # Partita IVA
 
 
-    model_config = ConfigDict(from_attributes=True)
-
-
 class OrderCreate(BaseModel):
     customer_email: EmailStr = Field(..., max_length=255, description="Email of the customer placing the order")
     shipping_address : Address

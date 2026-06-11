@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from app.core.config import settings
+from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 # Creating connection engin to the db
@@ -17,7 +19,7 @@ SessionLocal = async_sessionmaker(
 # Autoflush prepares information for autocommit, keeping it active makes no sense
 
 
-async def get_db():
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as db:
         yield db
 
