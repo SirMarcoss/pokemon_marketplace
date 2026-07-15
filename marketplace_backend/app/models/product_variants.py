@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 from sqlalchemy import text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, declared_attr
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey, Computed, Index
 from sqlalchemy.sql.sqltypes import Numeric, DateTime, Integer, Enum as SAEnum, Text
@@ -23,6 +23,10 @@ class CardConditionEnum(enum.Enum):
 class ProductVariant(Base):
     __tablename__ = "product_variants"
 
+    # Valutazione "lazy": viene eseguito solo quando l'intera classe è pronta
+    @declared_attr
+    def __mapper_args__(cls):
+        return {"version_id_col": cls.version}
 
     __table_args__ = (
         CheckConstraint("price_net_cents > 0", name="price_net_positivo"),
@@ -56,9 +60,9 @@ class ProductVariant(Base):
     # Formula: gross = net * (1 + tax_rate / 100)
     # persisted=True means the value is physically stored once on insert/update,
     # rather than being recalculated on every read.
-    price_gross_cents: Mapped[Decimal] = mapped_column(Numeric(10, 2),
+    price_gross_cents: Mapped[int] = mapped_column(Integer,
     Computed(
-    "ROUND(CAST(price_net_cents AS NUMERIC(10,2)) / 100 * (1 + tax_rate / 100.0), 2) * 100",
+    "CAST(ROUND(CAST(price_net_cents AS NUMERIC) * (1 + tax_rate / 100.0)) AS INTEGER)",
     persisted=True
         ),
         nullable=False

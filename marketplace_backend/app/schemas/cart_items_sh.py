@@ -11,7 +11,6 @@ class CartItemBaseCreate(BaseModel):
 
 
 class CartItemBaseUpdate(BaseModel):
-    variant_id: int
     quantity: Optional[int] = Field(None, gt=0, description="Quantity must be greater than zero")
 
 

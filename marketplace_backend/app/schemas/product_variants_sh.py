@@ -10,7 +10,7 @@ from datetime import datetime
 class ProductVariantCreate(BaseModel):
     product_id: int
     sku: str
-    language: Optional[str] = Field(default=None, max_length=5)
+    language: Optional[str] = Field(default="IT", max_length=5)
     is_foil: bool
     is_first_edition: bool
     img_master_url: Optional[str] = None

@@ -35,7 +35,7 @@ def verify_access_token(token: str)-> dict:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         sub: str = payload.get("sub")
-        if sub is None:
+        if sub is None or sub == "None":
             raise ValueError("Token missing 'sub' claim")
         return payload
     except ExpiredSignatureError:

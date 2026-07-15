@@ -5,9 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 # Creating connection engin to the db
-engine = create_async_engine(settings.DATABASE_URL)
-
-
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    pool_pre_ping=True,  # Previene crash se la connessione cade lato DB
+    pool_size=10,        # Numero massimo di connessioni stabili mantenute aperte
+    max_overflow=20      # Connessioni extra temporanee nei momenti di picco
+)
 # Creating a single session per user
 SessionLocal = async_sessionmaker(
     engine,

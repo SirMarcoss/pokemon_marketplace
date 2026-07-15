@@ -20,12 +20,12 @@ class User(Base):
 
 
     __table_args__ = (
-        Index("idx_users_email", "email", postgresql_where=text("deleted_at IS NULL")),
+        Index("idx_users_email", "email", unique=True, postgresql_where=text("deleted_at IS NULL")),
     )
 
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()"))
-    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     first_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     last_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

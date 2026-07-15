@@ -14,7 +14,7 @@ class Cart(Base):
     __table_args__ = (
         # Un carrello DEVE appartenere a un utente loggato OPPURE a una sessione guest.
         CheckConstraint(
-            "user_id IS NOT NULL OR session_id IS NOT NULL",
+            "(user_id IS NOT NULL) <>  (session_id IS NOT NULL)",
             name="cart_owner_check"
         ),
     )

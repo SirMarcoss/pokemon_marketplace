@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 class ProductCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=50)
+    title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = None
     category_id: int
     expansion_id: Optional[int] = None
