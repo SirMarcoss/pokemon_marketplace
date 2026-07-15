@@ -49,7 +49,11 @@ def run_migrations_offline() -> None:  # Gets involved only if you use --sql at 
 
 
 def do_run_migrations(connection: Connection) -> None:  # This is the synchronous function
-    context.configure(connection=connection, target_metadata=target_metadata)  # Gives Alembic the connection to the db and the metadata of the tables
+    context.configure(connection=connection,
+                      target_metadata=target_metadata,
+                      compare_type=True,  # Fondamentale: rileva cambi (es. da String(50) a String(255))
+                      compare_server_default=True,  # Rileva cambi nei server_default
+                      )  # Gives Alembic the connection to the db and the metadata of the tables
 
     with context.begin_transaction():  # All or nothing: if the operation goes wrong, all the previous actions are rolled back (deleted)
         context.run_migrations()       # With this you execute the actual queries on the db
