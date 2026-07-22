@@ -1,99 +1,67 @@
-# Pokémon Marketplace - Engineering Roadmap & Documentation
+# Pokémon Marketplace - High-Performance Backend Architecture & RESTful API
 
-Questo documento funge da **Unica Fonte di Verità (Single Source of Truth)** per lo sviluppo del marketplace e-commerce B2C dedicato alla vendita di carte Pokémon e collezionabili. Traccia l'architettura del sistema, lo stato dell'arte e la roadmap ingegneristica sequenziale per il team di sviluppo.
+Questo documento funge da Unica Fonte di Verità (Single Source of Truth) per l'architettura backend di un marketplace e-commerce B2C ad alte prestazioni dedicato alla gestione e vendita di asset collezionabili. 
 
----
+Sviluppato inizialmente partendo da requisiti commerciali reali, il sistema è ora mantenuto come architettura open-source focalizzata su latenze sub-200ms, transazioni ACID-complienti, e sicurezza stateless. Il progetto implementa un'architettura rigorosamente decostruita (Headless), esponendo unicamente endpoint RESTful pronti per essere consumati da qualsiasi client o microservizio.
 
 ## 1. Visione del Progetto & Architettura Specifica
 
-Il software è ingegnerizzato come un **E-commerce B2C Single-Vendor**. Il negozio fisico è l'unico amministratore autorizzato a inserire e gestire gli SKU (Stock Keeping Unit). L'architettura è interamente disaccoppiata (**Headless/Decoupled Architecture**) per massimizzare l'efficienza computazionale e abbattere i costi di hosting:
-
-* **Database Layer:** `PostgreSQL` (Relazionale, ACID-compliente, ottimizzato per transazioni finanziarie concorrenti tramite indici B-Tree).
-* **Application Layer (Backend):** `Python` + `FastAPI` (Asincrono, I/O non bloccante tramite ASGI, validazione dei dati nativa in Rust via Pydantic).
-* **Presentation Layer (Frontend):** `Next.js` (React framework con Server-Side Rendering per ottimizzazione SEO del catalogo).
-
----
+Il sistema è ingegnerizzato per massimizzare l'efficienza computazionale, la scalabilità orizzontale e l'integrità dei dati finanziari:
+*   **Database Layer:** PostgreSQL (Relazionale, ACID-compliente, ottimizzato per transazioni finanziarie concorrenti tramite indici B-Tree su attributi di catalogo e carrello).
+*   **Application Layer (API):** Python + FastAPI (Asincrono, I/O non bloccante tramite ASGI, con validazione dei dati nativa in Rust via Pydantic).
+*   **Infrastructure & Testing Layer:** Docker per la containerizzazione degli ambienti, Pytest per l'integrazione continua dei flussi finanziari.
 
 ## 2. Diario di Bordo & Avanzamento
 
-### Giorno 0: Fondamenta, Versionamento e Data Modeling
-* **Infrastruttura di Versioning:** Inizializzazione della repository privata su GitHub. Configurazione delle regole di scomposizione dei Line Endings (`.gitattributes`) per prevenire conflitti distruttivi tra l'ambiente Unix-based (`LF` su macOS) e l'ambiente Windows (`CRLF`). Configurazione del filtro `.gitignore` per l'isolamento dei file di metadati di sistema e delle credenziali sensibili.
-* **Modellazione dei Dati:** Progettazione del Diagramma Entità-Relazione (ER) normalizzato in Terza Forma Normale (3NF). Strutturazione delle tabelle core (`users`, `expansions`, `products`, `addresses`, `carts`, `cart_items`, `orders`, `order_items`) con risoluzione esplicita delle relazioni Molti-a-Molti tramite entità deboli (tabelle ponte) dotate di persistenza dello stato storico dei prezzi.
-* **Analisi dei Requisiti Funzionali:** Definizione del flusso logico delle transazioni (Carrello asincrono salvato su DB $
-ightarrow$ Checkout con indirizzo vincolato $
-ightarrow$ Transazione Stripe $
-ightarrow$ Cristallizzazione dell'ordine fiscale).
+**Giorno 0: Fondamenta, Versionamento e Data Modeling**
+*   **Infrastruttura di Versioning:** Inizializzazione della repository con configurazione rigorosa del filtro `.gitignore` per l'isolamento dei segreti (file `.env`) e dei metadati di sistema. Configurazione di `.gitattributes` per la normalizzazione dei Line Endings (LF vs CRLF).
+*   **Modellazione dei Dati:** Progettazione del Diagramma Entità-Relazione (ER) normalizzato in Terza Forma Normale (3NF). Strutturazione delle tabelle core (`users`, `expansions`, `products`, `addresses`, `carts`, `cart_items`, `orders`, `order_items`) con risoluzione esplicita delle relazioni Molti-a-Molti e persistenza dello stato storico dei prezzi per prevenire anomalie contabili.
+*   **Analisi dei Requisiti Funzionali:** Definizione del flusso transazionale di stato: Carrello Asincrono -> Checkout Vincolato -> Validazione Pagamento Stripe -> Cristallizzazione dell'Ordine.
 
----
+## 3. Roadmap Sequenziale di Sviluppo (Engineering Backlog)
 
-## 3. Roadmap Sequenziale di Sviluppo (Product Backlog)
+Il flusso di lavoro segue un approccio rigoroso dal basso verso l'alto (Bottom-Up), partendo dallo schema dati fino all'esposizione sicura degli endpoint.
 
-Il flusso di lavoro segue un approccio rigoroso dal basso verso l'alto (Bottom-Up): dai dati all'interfaccia utente.
+**Fase 1: Setup Ambiente & Database Object Mapping (ORM)**
+*   **Task 1.1 - Isolamento dei Runtime:** Configurazione degli ambienti virtuali locali Python e gestione rigorosa delle dipendenze.
+*   **Task 1.2 - Data Access Layer (SQLAlchemy 2.0):** Traduzione dello schema DB in modelli Python. Tipizzazione rigida dei campi (es. UUID per le chiavi primarie, `Integer` per i prezzi finanziari rappresentati in centesimi per evitare errori di floating-point).
+*   **Task 1.3 - Sistema di Migrazione (Alembic):** Configurazione del tracciamento storico delle evoluzioni dello schema DDL, garantendo l'integrità dei dati esistenti durante i deployment.
 
-### Fase 1: Setup Ambiente & Database Object Mapping (ORM)
-* **Task 1.1: Isolamento dei Runtime:** Configurazione degli ambienti virtuali locali (`venv` per Python, gestione dei moduli `npm` per Node).
-* **Task 1.2: Configurazione dell'ORM (SQLAlchemy / SQLModel):** Traduzione dello schema DBML in classi ed entità Python. I tipi di dato devono essere rigidi (es. UUID per le chiavi primarie, `Integer` in centesimi per i prezzi finanziari).
-* **Task 1.3: Sistema di Migrazione (Alembic):** Configurazione di Alembic per tracciare storicamente le evoluzioni dello schema del database senza mai ricorrere alla distruzione dei dati esistenti.
+**Fase 2: Sviluppo delle API Core & Logica di Business**
+*   **Task 2.1 - Sottosistema di Autenticazione Stateless:** Implementazione di registrazione e login. Hashing crittografico delle password tramite `bcrypt`. Generazione di JSON Web Tokens (JWT) trasmessi e validati in modo stateless.
+*   **Task 2.2 - Catalogo Service (CRUD Ottimizzato):** Sviluppo degli endpoint di interrogazione del catalogo con paginazione efficiente (limit/offset o cursor-based), filtraggio dinamico su attributi indicizzati (`is_foil`, `condition`) e JOIN ottimizzate con SQLAlchemy.
+*   **Task 2.3 - Carrello Asincrono (Concurrency Control):** Sviluppo della logica di mutazione delle quantità nel carrello. Implementazione di controlli a livello di database per garantire la consistenza logica e prevenire l'allocazione di quantità superiori allo `stock_quantity` effettivo.
 
-### Fase 2: Sviluppo delle API Core & Logica di Business (Backend)
-* **Task 2.1: Sottosistema di Autenticazione (Auth Service):** Implementazione della registrazione e del login utente. hashing sicuro delle password tramite algoritmo `bcrypt`. Generazione e validazione di Stateful/Stateless Tokens via `JWT` (JSON Web Tokens) trasmessi tramite cookie HTTP-only per prevenire attacchi XSS.
-* **Task 2.2: Catalogo Service (CRUD Prodotti):** Implementazione degli endpoint di lettura del catalogo con parametri obbligatori di paginazione, filtraggio binario per attributi indicizzati (`is_foil`, `condition`, `language`) e join efficienti con la tabella normalizzata delle espansioni.
-* **Task 2.3: Carrello Asincrono (Cart Service):** Sviluppo della logica di mutazione delle quantità nel carrello sul database, garantendo la consistenza logica (es. impedire l'aggiunta a carrello di una quantità superiore allo `stock_quantity` effettivo del prodotto).
+**Fase 3: Integrazione Finanziaria & Webhooks**
+*   **Task 3.1 - Stripe SDK Integration:** Costruzione degli endpoint di inizializzazione del `PaymentIntent`, assicurando che il calcolo matematico del totale carrello avvenga esclusivamente e in modo autoritativo lato server.
+*   **Task 3.2 - Asynchronous Webhooks:** Implementazione di un listener crittografato per i webhook di Stripe. L'aggiornamento dello stato dell'ordine in `PAID` è subordinato alla verifica crittografica della firma del webhook, azzerando il rischio di frodi client-side.
 
-### Fase 3: Integrazione dei Pagamenti & Gestione degli Stati di Transazione
-* **Task 3.1: Stripe SDK Integration:** Creazione degli endpoint per l'inizializzazione del `PaymentIntent` di Stripe a partire dal calcolo matematico del totale carrello eseguito lato server.
-* **Task 3.2: Sviluppo dei Webhooks Asincroni:** Creazione di un endpoint dedicato all'ascolto delle chiamate di rete crittografate provenienti dai server di Stripe. La transazione nella tabella `orders` cambia stato in `PAID` solo ed esclusivamente alla ricezione del webhook verificato, prevenendo attacchi di manomissione dei prezzi lato client.
-
-### Fase 4: Sviluppo del Presentation Layer (Frontend Next.js)
-* **Task 4.1: Design System & Componenti Atomici:** Setup di Tailwind CSS e creazione dei componenti riutilizzabili (`ProductCard`, `CartModal`, `Layout`).
-* **Task 4.2: Data Fetching & Caching (React Query / SWR):** Integrazione dei client di rete per consumare le API di FastAPI, implementando il caching automatico per ridurre le chiamate al server e ottimizzare i costi computazionali.
-* **Task 4.3: Flusso di Checkout:** Implementazione dei form protetti per l'inserimento dell'indirizzo e del modulo di pagamento sicuro Stripe Elements.
-
-### Fase 5: Testing, Continuous Integration (CI) e Rilascio
-* **Task 5.1: Suite di Unit Testing:** Scrittura di test di unità per la logica finanziaria del carrello e della tassazione degli ordini.
-* **Task 5.2: GitHub Actions (CI Bot):** Scrittura del workflow in formato YAML per l'esecuzione automatica del build e dei test ad ogni apertura di Pull Request verso `main`.
-* **Task 5.3: Cloud Provisioning & Deployment:** Configurazione dei server di produzione (Vercel per il frontend Next.js, Render/AWS per il backend FastAPI e il database gestito PostgreSQL).
-
----
+**Fase 4: Containerizzazione, Testing & Documentazione**
+*   **Task 4.1 - Dockerizzazione:** Creazione di `Dockerfile` e `docker-compose.yml` per l'orchestrazione locale simultanea di PostgreSQL e del server Uvicorn, permettendo un setup "one-click" per i revisori.
+*   **Task 4.2 - Suite di Testing (Pytest):** Copertura con test di integrazione dei flussi critici (calcolo tasse, concorrenza sul carrello, decodifica JWT).
+*   **Task 4.3 - Interactive Documentation:** Esposizione automatica delle specifiche OpenAPI (Swagger UI) per facilitare l'esplorazione e il testing manuale degli endpoint.
 
 ## 4. Regolamento Interno di Sviluppo (Git Workflow)
 
-Lavorando in un ambiente cross-platform, l'osservanza di queste regole previene il debito tecnico:
+L'osservanza di queste regole previene il debito tecnico e mantiene lo standard enterprise della repository:
+*   **Stabilità del Main:** Il branch `main` rappresenta l'ambiente stabile. I push diretti su `main` sono categoricamente vietati.
+*   **GitHub Flow:** Ogni feature o bugfix nasce in un ramo isolato (`feature/nome` o `bugfix/nome`).
+*   **Code Review Obbligatoria:** Il merge verso `main` avviene unicamente tramite Pull Request. Giulio (o il peer reviewer assegnato) deve ispezionare la logica, verificare la copertura dei test e approvare formalmente la PR prima dell'integrazione.
+*   **Conventional Commits:** Ogni commit deve dichiarare il proprio intento algoritmico:
+    *   `feat(scope): ...` (Nuova funzionalità API / Modello)
+    *   `fix(scope): ...` (Risoluzione bug)
+    *   `chore(scope): ...` (Aggiornamento configurazioni, Docker, CI)
+    *   `test(scope): ...` (Aggiunta o refactoring test suite)
 
-1.  **Stabilità del Main:** Il branch `main` rappresenta l'ambiente stabile di produzione. È severamente vietato effettuare `push` diretti su `main`.
-2.  **GitHub Flow:** Ogni nuova feature o bugfix deve nascere in un ramo isolato (`feature/nome-funzionalità` o `bugfix/nome-bug`).
-3.  **Code Review Obbligatoria:** L'unione di un branch in `main` avviene esclusivamente tramite Pull Request. Il collega che non ha scritto il codice deve ispezionare la logica e approvare formalmente il merge.
-4.  **Convenzione dei Commit (Conventional Commits):** Ogni commit deve auto-esplicare la sua natura algoritmica seguendo lo standard:
-    * `feat(scope): ...` (Nuova funzionalità)
-    * `fix(scope): ...` (Risoluzione di un bug o di un crash)
-    * `chore(scope): ...` (Aggiornamento di configurazioni o dipendenze
+## 5. Stack Tecnologico di Riferimento
 
-
-## 5. Informazioni Utili 
-stack da usare/studiare:
-
-BACK-END
-
-*linguaggio core: python
-*web framework : FastAPI
-*Application server: Uvicorn (FastAPI è solo il framework. Uvicorn è il server fisico in ascolto sulla porta di rete (es. la porta 8000) che traduce i byte in arrivo da internet in oggetti Python leggibili da FastAPI.
-*Validazione Dati Automatica: Pydantic
-*Motore Database: PostgreSQL
-*ORM: SQLAlchemy 2.0
-Versionamento DB: Alembic (Tipo git per databse)
-Sicurezza informatica ed autenticazione: Passlib e python-jose (crittografia unidirezionale (hashing) per le password e a generare JSON Web Tokens per mantenere gli utenti loggati in modo stateless (senza salvare le sessioni nel database)
-Integrazione Pagamenti: Stripe Python SDK
-
-
-
-FRONT-END
-Libreria core: React.js 
-Meta-Framework: Next.js (eact puro genera pagine "vuote" che si riempiono solo dopo il caricamento, distruggendo l'indicizzazione di Google. Next.js introduce il Server-Side Rendering (SSR): pre-compila le pagine delle carte Pokemon sul server prima di inviarle al client, garantendo una SEO perfetta. La SEO è la Search engine optimization, algoritmo che li fa spunatre in alto su google)
-linguaggio core: TypeScript
-Styling Engine: Tailwind CSS (integrato direttamente nel codice)
-Gestione di Rete: TanStack Query (È il ponte tra il frontend e FastAPI. Gestisce automaticamente il caricamento (mostrando gli spinner di loading), la cache (se l'utente torna indietro alla pagina precedente, i dati non vengono riscaricati ma presi dalla memoria) e la sincronizzazione in background.)
-Gestione dello Stato Globale: Zustand (o React Context) (Se un utente aggiunge Charizard al carrello nella pagina "Catalogo", il numero sull'icona del carrello nella barra di navigazione in alto deve aggiornarsi istantaneamente. Zustand permette a componenti completamente distanti di leggere e scrivere sulle stesse variabili in tempo reale.)
-
-
-Componenti Interfaccia (Libreria UI): shadcn/ui (consigliata) IMPORTANRE PER LO STYLING DELLA LENDING PAGE
-. Offre componenti accessibili e pre-costruiti (menù a tendina, modali, bottoni, tabelle) di cui tu hai il pieno controllo del codice sorgente per personalizzarli.
+*   **Linguaggio Core:** Python 3.x
+*   **Web Framework:** FastAPI
+*   **Application Server:** Uvicorn (Traduzione asincrona ASGI per massimizzare il throughput HTTP).
+*   **Validazione Dati:** Pydantic (Validazione e serializzazione rigorosa in fase di runtime).
+*   **Motore Database:** PostgreSQL
+*   **Object-Relational Mapper (ORM):** SQLAlchemy 2.0
+*   **Versionamento Database:** Alembic
+*   **Sicurezza & Crittografia:** `passlib[bcrypt]` e `python-jose` (Hashing password e generazione JWT).
+*   **Integrazione Pagamenti:** Stripe Python SDK
+*   **Testing & Infrastructure:** Pytest, Docker, Docker Compose, GitHub Actions (CI).
