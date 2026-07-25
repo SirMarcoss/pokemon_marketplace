@@ -11,6 +11,7 @@ class UserService:
     Richiede una AsyncSession iniettata al momento dell'istanziazione.
     """
 
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -30,6 +31,16 @@ class UserService:
         return result.scalars().first()
         # perchè scalar: PostgreSQL restituisce i dati sotto forma di righe (Tuple)
         # scalar scompatta la tupla e ti restituisce l'oggetto Python pulito (User)
+
+
+    async def get_user_by_id(self, user_id: str) -> User | None:
+        """
+        Cerca un utente nel database tramite l'ID.
+        Ritorna l'oggetto User di SQLAlchemy se trovato, altrimenti None.
+        """
+        stmt = select(User).where(User.id == user_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
 
 
     async def create_user(self, user_in: UserCreate) -> User:

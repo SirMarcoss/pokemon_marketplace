@@ -10,12 +10,23 @@ from app.services.user_service import UserService
 # Importiamo la funzione che ci fornisce la connessione al DB (ipotizziamo si trovi qui)
 from app.core.database import get_db
 
+from fastapi.security import OAuth2PasswordRequestForm
+from pydantic import BaseModel
+from app.core.security import create_access_token
+
+
 # Creiamo il router
-router = APIRouter()
+router = APIRouter() # starta il router
 
 
 @router.post("/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)
+# POST: richiesta di scrittura nel path ...marketplace.com\register
+# response_model: specifica che la risposta deve essere un UserRead (pydantic validation)
+# status_code: specifica il codice HTTP da restituire
 async def register_user(payload: UserCreate, db: AsyncSession = Depends(get_db)):
+    # Depends: richiede l'apertura di una sessione del db. tale verrà chiusa solo quando sarà ritornato un valore
+    # HTTP specifico. Rimane aperta tramite lo yield
+    # payload = informazioni effettive dell'utente. le verifica subito tramite la classe UserCreate (hash, pydantic...)
     user_service = UserService(db)
     try:
         # FastAPI "tenta" di eseguire la creazione
@@ -30,3 +41,33 @@ async def register_user(payload: UserCreate, db: AsyncSession = Depends(get_db))
             detail=str(e)  # Questo stamperà esattamente la stringa definita nel Service
         )
 
+
+# LOGIN
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+# validazione pydantic per il token JWT
+
+
+@router.post("/login", response_model=Token)
+async def login_user(
+        form_data: OAuth2PasswordRequestForm = Depends(), # standard per il login, richiede due campi:
+        # username e password (da validare)
+        db: AsyncSession = Depends(get_db) # richiede l'apertura di una sessione del db' 1 volta per tutte le richieste
+):
+    """
+    Endpoint per autenticare un utente e restituire un JWT.
+    """
+
+    user_service = UserService(db) # istanziamo il service per l'autenticazione
+    user = await user_service.authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    access_token = create_access_token(data={"sub": str(user.id)}) # creiamo il token JWT
+    # forzo str perchè l'ID di PostgreSQL è un oggetto UUID ed è
+    # sempre buona norma passare stringhe pulite alle librerie crittografiche come JOSE
+
+    return {"access_token": access_token, "token_type": "bearer"}
