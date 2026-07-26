@@ -3,6 +3,7 @@ from pydantic.config import ConfigDict
 from pydantic.fields import Field
 from typing import Optional
 from datetime import datetime
+from app.schemas.product_variants_sh import ProductVariantRead
 
 
 class ProductCreate(BaseModel):
@@ -31,4 +32,13 @@ class ProductRead(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+class ProductDetailRead(BaseModel):
+    """
+    Schema composito per restituire un prodotto intero
+    con tutto il suo array di varianti collegate.
+    """
+    product: ProductRead
+    variants: list[ProductVariantRead]
+
     model_config = ConfigDict(from_attributes=True)
+    # Questo serve per permettere a Pydantic di leggere oggetti SQLAlchemy
