@@ -1,13 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
-
 from app.core.database import get_db
 from app.services.product_service import ProductService
-from app.schemas.products_sh import ProductRead, ProductDetailRead
-from app.schemas.product_variants_sh import ProductVariantRead
-from app.schemas.products_sh import ProductCreate
-from app.core.security import get_current_user  # Oppure dal file in cui l'hai salvata
+from app.schemas.products_sh import ProductRead, ProductDetailRead, ProductCreate
+from app.core.security import get_current_user
 from app.models.user import User  # Il tuo modello utente
 
 
@@ -61,6 +57,12 @@ async def create_product(
     Crea un nuovo prodotto. Accessibile solo agli utenti autenticati.
     """
     # Se il token manca o è falso, FastAPI blocca la richiesta prima di arrivare qui.
+
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Non hai i permessi per creare prodotti nel catalogo."
+        )
 
     product_service = ProductService(db)
 
