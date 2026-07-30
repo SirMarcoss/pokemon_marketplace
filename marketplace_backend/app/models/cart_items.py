@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import CheckConstraint, ForeignKey, Integer, UniqueConstraint, DateTime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.functions import func
 from app.models.base import Base
 
@@ -32,7 +32,8 @@ class CartItem(Base):
     added_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-
+    cart = relationship("Cart", back_populates="items")
+    variant = relationship("ProductVariant")
 
     def __repr__(self) -> str:
         return f"<CartItem(cart_id={self.cart_id!r}, variant_id={self.variant_id!r}, qty={self.quantity!r})>"

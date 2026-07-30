@@ -28,3 +28,19 @@ async def add_item_to_cart(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=str(e))
 
+
+@router.get("/", response_model=CartItemBaseRead, status_code=status.HTTP_200_OK)
+async def get_my_cart(
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Restituisce il carrello dell'utente loggato con i dettagli completi delle carte.
+    """
+    cart_service = CartService(db)
+    result = await cart_service.get_cart_with_details(current_user.id)
+    return result
+    # nessun uso di try/exept perchè il metodo get_cart_with_details non solleva mai un errore, se non trova
+    # il carrello ne crea uno vuoto
+
+

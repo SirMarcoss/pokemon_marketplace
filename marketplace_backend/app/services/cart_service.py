@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 from app.models.carts import Cart
 from app.models.cart_items import CartItem
@@ -109,3 +110,17 @@ class CartService:
             await self.db.refresh(new_cart_item)
 
             return new_cart_item
+
+    async def get_cart_with_details(self, user_id: uuid.UUID) -> Cart:
+        """
+        Recupera il carrello dell'utente con tutti gli items e le rispettive varianti (Eager Loading).
+        """
+        stmt = (select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.variant)))
+        result = await self.db.execute(stmt)
+        cart = result.scalar_one_or_none()
+        if cart:
+            return cart
+        else:
+            new_cart = await self.get_or_create_cart(user_id)
+            return new_cart
+
