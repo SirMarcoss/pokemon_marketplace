@@ -4,7 +4,8 @@ from app.core.database import get_db
 from app.services.product_service import ProductService
 from app.schemas.products_sh import ProductRead, ProductDetailRead, ProductCreate
 from app.core.security import get_current_user
-from app.models.user import User  # Il tuo modello utente
+from app.models.user import User
+from app.schemas.product_variants_sh import ProductVariantRead, ProductVariantCreate
 
 
 
@@ -66,7 +67,31 @@ async def create_product(
 
     product_service = ProductService(db)
 
-    # In futuro, potremmo aggiungere un controllo: if not current_user.is_admin: raise 403
 
     return await product_service.create_product(product_in)
 
+
+
+@router.post(
+    "/variants",
+    response_model=ProductVariantRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(get_current_user)]  # Il buttafuori a livello di rotta
+)
+async def create_variant(
+        variant_in: ProductVariantCreate,
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    Aggiunge una nuova variante (stock, prezzo, condizione) a un prodotto esistente.
+    """
+
+    product_service = ProductService(db)
+    try:
+        result = await product_service.create_product_variant(variant_in)
+        return result
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )

@@ -2,9 +2,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.products import Product
 from app.models.product_variants import ProductVariant
+from app.schemas.product_variants_sh import ProductVariantCreate
 from slugify import slugify
 from app.schemas.products_sh import ProductCreate
-
 
 
 class ProductService:
@@ -15,6 +15,7 @@ class ProductService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+
     async def get_products(self, skip: int = 0, limit: int = 50) -> list[Product]:
         """
         Recupera una lista paginata di prodotti.
@@ -22,6 +23,7 @@ class ProductService:
         stmt = select(Product).offset(skip).limit(limit)
         result = await self.db.execute(stmt)
         return result.scalars().all()
+
 
     async def get_product_by_slug(self, slug: str) -> dict | None:
         # 1. Trova il prodotto
@@ -62,3 +64,26 @@ class ProductService:
 
         return db_product
 
+
+    async def create_product_variant(self, variant_in: ProductVariantCreate) -> ProductVariant:
+        """
+        Crea una nuova variante (es. Foil, First Edition) collegandola a un prodotto esistente.
+        """
+        stmt_product_variant = select(ProductVariant).where(Product.id == variant_in.product_id)
+        result = await self.db.execute(stmt_product_variant)
+        product_variant = result.scalar_one_or_none()
+
+        if not product_variant:
+            raise ValueError(f"Prodotto con ID {variant_in.product_id} non trovato.")
+
+        # 1. Smonta l'oggetto Pydantic in un dizionario
+        variant_data = variant_in.model_dump()
+
+        # 2. Spacchettalo direttamente dentro il modello SQLAlchemy!
+        db_product_variant = ProductVariant(**variant_data)
+
+        self.db.add(db_product_variant)
+        await self.db.commit()
+        await self.db.refresh(db_product_variant)
+
+        return db_product_variant
