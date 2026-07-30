@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.products import Product
 from app.models.product_variants import ProductVariant
+from slugify import slugify
+from app.schemas.products_sh import ProductCreate
 
 
 
@@ -42,3 +44,21 @@ class ProductService:
             "product": product,
             "variants": variants
         }
+
+
+    async def create_product(self, product_in: ProductCreate) -> Product:
+        """
+        Crea un nuovo prodotto nel database generando automaticamente lo slug.
+        """
+        # 1. Genera lo slug a partire dal titolo (product_in.title) usando la funzione slugify()
+        generated_slug = slugify(product_in.title)
+        product_data = product_in.model_dump()
+
+        db_product = Product(**product_data, slug=generated_slug)
+
+        self.db.add(db_product)
+        await self.db.commit()
+        await self.db.refresh(db_product)
+
+        return db_product
+

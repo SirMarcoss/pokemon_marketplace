@@ -6,6 +6,10 @@ from app.core.database import get_db
 from app.services.product_service import ProductService
 from app.schemas.products_sh import ProductRead, ProductDetailRead
 from app.schemas.product_variants_sh import ProductVariantRead
+from app.schemas.products_sh import ProductCreate
+from app.core.security import get_current_user  # Oppure dal file in cui l'hai salvata
+from app.models.user import User  # Il tuo modello utente
+
 
 
 router = APIRouter()
@@ -45,4 +49,22 @@ async def get_product(
     if product_data is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     return product_data
+
+
+@router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
+async def create_product(
+        product_in: ProductCreate,  # Il payload JSON in ingresso
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)  # IL BUTTAFUORI
+):
+    """
+    Crea un nuovo prodotto. Accessibile solo agli utenti autenticati.
+    """
+    # Se il token manca o è falso, FastAPI blocca la richiesta prima di arrivare qui.
+
+    product_service = ProductService(db)
+
+    # In futuro, potremmo aggiungere un controllo: if not current_user.is_admin: raise 403
+
+    return await product_service.create_product(product_in)
 
