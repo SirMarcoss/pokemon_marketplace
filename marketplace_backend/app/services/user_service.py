@@ -56,7 +56,13 @@ class UserService:
             raise ValueError("Un utente con questa email è già registrato.")
 
         # 2. Sicurezza: Hash della password in chiaro in arrivo da Pydantic
-        hashed_pwd = hash_password(user_in.password)
+        password_bytes = user_in.password.encode('utf-8')
+        if len(password_bytes) > 72:
+            # Tronca esattamente a 72 byte e ritrasforma in stringa
+            safe_password = password_bytes[:72].decode('utf-8', errors='ignore')
+        else:
+            safe_password = user_in.password
+        hashed_pwd = hash_password(safe_password)
 
         # 3. Mappatura: Creazione dell'oggetto SQLAlchemy
         db_user = User(

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.api.v1.endpoints import cart, products, auth
 
 app = FastAPI(
     title='MarketPlace API',
@@ -8,6 +9,13 @@ app = FastAPI(
 #Semantic versioning: 0 -> not in production project (instable project)
 #                     1 -> first version that works
 #                     0: no patch realized
+
+
+# 2. AGGANCIA I ROUTER ALL'APP
+# Il 'prefix' indica la rotta base, i 'tags' servono per ordinare l'interfaccia di Swagger
+app.include_router(cart.router, prefix="/cart", tags=["Cart"])
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(products.router, prefix="/products", tags=["Products"])
 
 @app.get("/") # the function right below is in charge of handling requests that go to: the path (/)
 async def root(): #async function

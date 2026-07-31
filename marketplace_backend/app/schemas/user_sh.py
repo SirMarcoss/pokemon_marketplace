@@ -1,5 +1,5 @@
 from pydantic.main import BaseModel
-from pydantic.types import EmailStr
+from pydantic import EmailStr
 from pydantic.config import ConfigDict
 from pydantic.fields import Field
 from typing import Optional
