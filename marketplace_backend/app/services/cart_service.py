@@ -5,6 +5,7 @@ from app.models.carts import Cart
 from app.models.cart_items import CartItem
 from app.models.product_variants import ProductVariant
 from app.schemas.cart_items_sh import CartItemBaseCreate
+from uuid import UUID
 import uuid
 
 
@@ -115,7 +116,7 @@ class CartService:
         """
         Recupera il carrello dell'utente con tutti gli items e le rispettive varianti (Eager Loading).
         """
-        stmt = (select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.variant)))
+        stmt = select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.variant))
         result = await self.db.execute(stmt)
         cart = result.scalar_one_or_none()
         if cart:
@@ -124,3 +125,58 @@ class CartService:
             new_cart = await self.get_or_create_cart(user_id)
             return new_cart
 
+
+    async def update_cart_item(self, user_id: UUID, item_id: UUID, quantity: int) -> CartItem:
+        """
+        Obiettivo: Trovare il CartItem, verificare che appartenga all'utente,
+        controllare lo stock della variante associata e aggiornare la quantità.
+        """
+        stmt = select(Cart).where(Cart.user_id == user_id).options(selectinload(Cart.items).selectinload(CartItem.variant))
+        result = await self.db.execute(stmt)
+        cart = result.scalar_one_or_none()
+        if not cart:
+            raise ValueError("Carrello non trovato")
+
+        target_item = None
+        for item in cart.items:
+            if item.id == item_id:
+                target_item = item
+                break
+
+        if not target_item:
+            raise ValueError("Prodotto non presente nel tuo carrello")
+
+        # 3. Controlla lo stock usando la variante che hai pre-caricato
+        if target_item.variant.stock < quantity:
+            raise ValueError(f"Stock insufficiente. Massima disponibilità: {target_item.variant.stock}")
+
+        # 4. Aggiorna la quantità (Python capisce che l'oggetto è stato modificato)
+        target_item.quantity = quantity
+
+        # 5. Sincronizza la RAM con il Database fisico
+        await self.db.commit()
+
+        return target_item
+
+
+    async def remove_cart_item(self, user_id: UUID, item_id: UUID) -> None:
+        # 1. Trova l'item da cancellare accertandoti che appartenga all'utente
+        stmt = (
+            select(CartItem)
+            .join(Cart)  # Colleghiamo la tabella Cart
+            .where(
+                CartItem.id == item_id,
+                Cart.user_id == user_id  # Ora il confronto è corretto!
+            )
+        )
+        result = await self.db.execute(stmt)
+        target_item = result.scalar_one_or_none()
+
+        if not target_item:
+            raise ValueError("Elemento non trovato nel tuo carrello")
+
+        # 2. Passa l'oggetto fisico alla funzione delete
+        await self.db.delete(target_item)
+
+        # 3. Applica la distruzione nel database
+        await self.db.commit()

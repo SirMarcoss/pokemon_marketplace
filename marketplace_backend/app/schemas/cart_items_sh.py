@@ -13,7 +13,7 @@ class CartItemBaseCreate(BaseModel):
 
 
 class CartItemBaseUpdate(BaseModel):
-    quantity: Optional[int] = Field(None, gt=0, description="Quantity must be greater than zero")
+    quantity: Optional[int] = Field(None, ge=0, description="Quantity must be greater than zero")
 
 
 class CartItemBaseRead(BaseModel):
