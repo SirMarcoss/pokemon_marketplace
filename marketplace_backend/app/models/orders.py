@@ -1,13 +1,15 @@
 import enum
 import uuid
 from datetime import datetime
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from sqlalchemy import CheckConstraint, Enum as SAEnum, ForeignKey, Integer, String, Text, DateTime, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.functions import func
-from app.models.order_items import OrderItem
 from app.models.base import Base
+
+if TYPE_CHECKING:
+    from app.models.order_items import OrderItem
 
 
 class PaymentStatusEnum(enum.Enum):

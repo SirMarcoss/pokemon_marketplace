@@ -10,7 +10,10 @@ from sqlalchemy.sql.schema import CheckConstraint, ForeignKey
 from  sqlalchemy.sql.functions import func
 from sqlalchemy.sql.sqltypes import DateTime
 from app.models.product_variants import ProductVariant
-from app.models.orders import Order
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.orders import Order
 
 
 

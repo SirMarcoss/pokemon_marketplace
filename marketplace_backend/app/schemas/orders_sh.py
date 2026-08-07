@@ -1,6 +1,6 @@
 from pydantic.main import BaseModel
 from pydantic.config import ConfigDict
-from pydantic.types import EmailStr
+from pydantic import EmailStr
 from pydantic.fields import Field
 from app.models.orders import  FulfillmentStatusEnum, PaymentStatusEnum
 from uuid import UUID
