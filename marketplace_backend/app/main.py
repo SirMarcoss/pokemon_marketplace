@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.v1.endpoints import cart, products, auth
+from app.api.v1.endpoints import cart, products, auth, orders
 
 app = FastAPI(
     title='MarketPlace API',
@@ -16,6 +16,8 @@ app = FastAPI(
 app.include_router(cart.router, prefix="/cart", tags=["Cart"])
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(products.router, prefix="/products", tags=["Products"])
+
+app.include_router(orders.router, prefix="/orders", tags=["Orders"])
 
 @app.get("/") # the function right below is in charge of handling requests that go to: the path (/)
 async def root(): #async function

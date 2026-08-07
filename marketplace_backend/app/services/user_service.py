@@ -75,7 +75,11 @@ class UserService:
 
         # 4. Persistenza: Transazione asincrona
         self.db.add(db_user)
-        await self.db.commit()  # Salva fisicamente su disco
+        await self.db.commit()  # Salva fisicamente su disco RAM --> commit --> SQLAlchemy --> PostgreSQL --> Disco
+
+        # Se tu restituissi al frontend l'oggetto new_order subito dopo il commit, senza fare il refresh,
+        # FastAPI andrebbe in crash, dicendo: "Non riesco a leggere 'created_at', l'oggetto è scaduto".
+        # per motivi di estrema sicurezza, SQLAlchemy fa scadere (expire) l'oggetto Python che hai in memoria RAM.
         await self.db.refresh(db_user)  # Ricarica l'oggetto per ottenere l'ID (UUID) generato dal DB
 
         return db_user

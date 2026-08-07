@@ -2,13 +2,15 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 from app.models.base import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import  String, Numeric, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from typing import Optional
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey
 from  sqlalchemy.sql.functions import func
 from sqlalchemy.sql.sqltypes import DateTime
+from app.models.product_variants import ProductVariant
+from app.models.orders import Order
 
 
 
@@ -33,6 +35,9 @@ class OrderItem(Base):
     price_gross_cents_at_purchase: Mapped[int]= mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    order: Mapped["Order"] = relationship("Order", back_populates="items")
+    variant: Mapped["ProductVariant"] = relationship("ProductVariant")
 
 
     def __repr__(self) -> str:

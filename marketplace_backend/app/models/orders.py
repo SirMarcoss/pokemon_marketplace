@@ -4,9 +4,9 @@ from datetime import datetime
 from typing import Any
 from sqlalchemy import CheckConstraint, Enum as SAEnum, ForeignKey, Integer, String, Text, DateTime, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.functions import func
-
+from app.models.order_items import OrderItem
 from app.models.base import Base
 
 
@@ -50,23 +50,15 @@ class Order(Base):
     stripe_intent_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
 
     payment_status: Mapped[PaymentStatusEnum] = mapped_column(
-        SAEnum(
-            PaymentStatusEnum,
-            values_callable=lambda enum_cls: [item.value for item in enum_cls],
-            name="payment_status_enum",
-        ),
+        SAEnum(PaymentStatusEnum, name="payment_status_enum"),
         nullable=False,
-        server_default="pending",
+        server_default=text("'pending'"),
     )
 
     fulfillment_status: Mapped[FulfillmentStatusEnum] = mapped_column(
-        SAEnum(
-            FulfillmentStatusEnum,
-            values_callable=lambda enum_cls: [item.value for item in enum_cls],
-            name="fulfillment_status_enum",
-        ),
+        SAEnum(FulfillmentStatusEnum, name="fulfillment_status_enum"),
         nullable=False,
-        server_default="unfulfilled",
+        server_default=text("'unfulfilled'"),
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -80,6 +72,8 @@ class Order(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+    items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         # Un __repr__ pulito evita di stampare JSON enormi nei log, limitandosi ai dati essenziali
