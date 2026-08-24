@@ -21,8 +21,9 @@ class CartService:
         """
         stmt = select(Cart).where(Cart.user_id == user_id)
         result = await self.db.execute(stmt)
-        if result:
-            return result.scalar().all()
+        cart = result.scalar_one_or_none()
+        if cart:
+            return cart
         else:
             new_cart = Cart(user_id=user_id)
 
@@ -126,7 +127,7 @@ class CartService:
             return new_cart
 
 
-    async def update_cart_item(self, user_id: UUID, item_id: UUID, quantity: int) -> CartItem:
+    async def update_cart_item(self, user_id: UUID, item_id: int, quantity: int) -> CartItem:
         """
         Obiettivo: Trovare il CartItem, verificare che appartenga all'utente,
         controllare lo stock della variante associata e aggiornare la quantità.
@@ -159,7 +160,7 @@ class CartService:
         return target_item
 
 
-    async def remove_cart_item(self, user_id: UUID, item_id: UUID) -> None:
+    async def remove_cart_item(self, user_id: UUID, item_id: int) -> None:
         # 1. Trova l'item da cancellare accertandoti che appartenga all'utente
         stmt = (
             select(CartItem)

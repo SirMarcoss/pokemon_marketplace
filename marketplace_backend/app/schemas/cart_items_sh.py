@@ -23,6 +23,8 @@ class CartItemBaseRead(BaseModel):
     quantity: int
     added_at: datetime
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class CartItemDetailRead(BaseModel):
     id: int

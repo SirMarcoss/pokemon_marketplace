@@ -4,8 +4,8 @@ from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.schemas.cart_items_sh import CartItemBaseCreate, CartItemBaseRead, CartItemBaseUpdate
+from app.schemas.carts_sh import CartBaseRead
 from app.services.cart_service import CartService
-from uuid import  UUID
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ async def add_item_to_cart(
                             detail=str(e))
 
 
-@router.get("/", response_model=CartItemBaseRead, status_code=status.HTTP_200_OK)
+@router.get("/", response_model=CartBaseRead, status_code=status.HTTP_200_OK)
 async def get_my_cart(
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user)
@@ -47,7 +47,7 @@ async def get_my_cart(
 
 @router.put("/items/{item_id}", status_code=status.HTTP_200_OK)
 async def update_item_quantity(
-    item_id: UUID,
+    item_id: int,
     item_in: CartItemBaseUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -65,7 +65,7 @@ async def update_item_quantity(
 
 @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_item_from_cart(
-    item_id: UUID,
+    item_id: int,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
