@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy import DateTime, text, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.schema import ForeignKey, Index
 from sqlalchemy.sql.functions import func
 from datetime import datetime
@@ -33,6 +33,8 @@ class Product(Base):
         nullable=False,
     )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    variants = relationship("ProductVariant", back_populates="product", cascade="all, delete-orphan")
 
 
     def __repr__(self) -> str:

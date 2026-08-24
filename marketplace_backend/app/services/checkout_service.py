@@ -1,9 +1,10 @@
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 from decimal import Decimal
+
+from app.models import ProductVariant, Product
 from app.models.orders import Order
 from app.models.order_items import OrderItem
 from app.models.carts import Cart
@@ -23,7 +24,8 @@ class CheckoutService:
         stmt = (
             select(Cart)
             .where(Cart.user_id == user_id)
-            .options(selectinload(Cart.items).selectinload(CartItem.variant))
+            .options(selectinload(Cart.items).selectinload(CartItem.variant)
+                     .selectinload(ProductVariant.product))
         )
         result = await self.db.execute(stmt)
         cart = result.scalar_one_or_none()
@@ -60,11 +62,9 @@ class CheckoutService:
 
                 # b) Sottrazione dello stock fisico
                 variant.stock -= cart_item.quantity
+                unit_price = variant.price_gross_cents
 
-                # c) Calcolo dei prezzi (Sostituisci variant.price_cents con il tuo vero campo del prezzo)
-                # Ipotizziamo che la variante costi 1000 cents (10.00€)
-                unit_price = variant.price_cents
-                line_total = unit_price * cart_item.quantity
+                line_total = variant.price_gross_cents * cart_item.quantity
                 total_cents += line_total
 
                 # d) Creazione dello "Scontrino" (OrderItem)
@@ -74,11 +74,11 @@ class CheckoutService:
                     quantity=cart_item.quantity,
 
                     # Congeliamo i dati storici
-                    product_name_at_purchase=variant.name,  # Modifica se il nome è in un'altra tabella
+                    product_name_at_purchase=variant.product.title,  # Modifica se il nome è in un'altra tabella
                     sku_at_purchase=variant.sku,
-                    price_net_cents_at_purchase=unit_price,
-                    tax_rate_at_purchase=Decimal("22.00"),  # Esempio: IVA al 22%
-                    price_gross_cents_at_purchase=unit_price,
+                    price_net_cents_at_purchase=variant.price_net_cents,
+                    tax_rate_at_purchase=variant.tax_rate,
+                    price_gross_cents_at_purchase=variant.price_gross_cents
                 )
                 self.db.add(order_item)
 

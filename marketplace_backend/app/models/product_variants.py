@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 from sqlalchemy import text
-from sqlalchemy.orm import Mapped, mapped_column, declared_attr
+from sqlalchemy.orm import Mapped, mapped_column, declared_attr, relationship
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import CheckConstraint, ForeignKey, Computed, Index
 from sqlalchemy.sql.sqltypes import Numeric, DateTime, Integer, Enum as SAEnum, Text
@@ -80,6 +80,8 @@ class ProductVariant(Base):
         nullable=False,
     )
     deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    product = relationship("Product")
 
 
     def __repr__(self) -> str:
