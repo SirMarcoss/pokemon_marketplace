@@ -47,3 +47,11 @@ class OrderRead(BaseModel):
 
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PaymentIntentResponse(BaseModel):
+    """
+    Schema restituito al frontend per completare il pagamento tramite Stripe Elements.
+    """
+    client_secret: str = Field(..., description="Il segreto effimero da passare a Stripe Elements")
+    payment_intent_id: str = Field(..., description="L'identificativo univoco della transazione Stripe")
