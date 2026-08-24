@@ -69,7 +69,7 @@ class ProductService:
         """
         Crea una nuova variante (es. Foil, First Edition) collegandola a un prodotto esistente.
         """
-        stmt_product_variant = select(ProductVariant).where(Product.id == variant_in.product_id)
+        stmt_product_variant = select(Product).where(Product.id == variant_in.product_id)
         result = await self.db.execute(stmt_product_variant)
         product_variant = result.scalar_one_or_none()
 

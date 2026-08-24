@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.services.product_service import ProductService
 from app.schemas.products_sh import ProductRead, ProductDetailRead, ProductCreate
 from app.api.deps import get_current_user
-from app.models.user import User
+from app.models.user import User, UserRoleEnum
 from app.schemas.product_variants_sh import ProductVariantRead, ProductVariantCreate
 
 
@@ -59,7 +59,7 @@ async def create_product(
     """
     # Se il token manca o è falso, FastAPI blocca la richiesta prima di arrivare qui.
 
-    if current_user.role != "admin":
+    if current_user.role != UserRoleEnum.ADMIN :
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Non hai i permessi per creare prodotti nel catalogo."
