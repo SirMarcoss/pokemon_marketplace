@@ -1,15 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-
-# Importiamo gli schemi Pydantic
+from app.models.user import User
+from app.api.deps import get_current_user
 from app.schemas.user_sh import UserCreate, UserRead
-
-# Importiamo il Service che abbiamo analizzato prima
 from app.services.user_service import UserService
-
-# Importiamo la funzione che ci fornisce la connessione al DB (ipotizziamo si trovi qui)
 from app.core.database import get_db
-
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from app.core.security import create_access_token
@@ -71,3 +66,14 @@ async def login_user(
     # sempre buona norma passare stringhe pulite alle librerie crittografiche come JOSE
 
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserRead, status_code=status.HTTP_200_OK)
+async def get_current_user_profile(
+        current_user: User = Depends(get_current_user)
+):
+    """
+    Restituisce le informazioni del profilo dell'utente attualmente autenticato.
+    FastAPI usa 'UserRead' per serializzare i dati, nascondendo l'hash della password.
+    """
+    return current_user
