@@ -75,5 +75,8 @@ async def get_current_user_profile(
     """
     Restituisce le informazioni del profilo dell'utente attualmente autenticato.
     FastAPI usa 'UserRead' per serializzare i dati, nascondendo l'hash della password.
+    Nel momento in cui un utente aggiorna la pagina, il front-end rimarrebbe solo col token senza
+    sapere di che utente sia. questo endpoint verrà subito richiamato all'apertura di una nuova
+    pagina dal front-end in modo tale da autenticare l'utente
     """
     return current_user

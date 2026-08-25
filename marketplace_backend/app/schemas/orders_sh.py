@@ -5,6 +5,7 @@ from pydantic.fields import Field
 from app.models.orders import  FulfillmentStatusEnum, PaymentStatusEnum
 from uuid import UUID
 from datetime import datetime
+from app.schemas.order_items_sh import OrderItemRead
 
 
 class Address(BaseModel):
@@ -55,3 +56,11 @@ class PaymentIntentResponse(BaseModel):
     """
     client_secret: str = Field(..., description="Il segreto effimero da passare a Stripe Elements")
     payment_intent_id: str = Field(..., description="L'identificativo univoco della transazione Stripe")
+
+
+class OrderDetailRead(OrderRead):
+    """
+    Eredita tutti i campi di OrderRead (id, total, status, address)
+    e aggiunge l'array con tutti gli OrderItem congelati al momento dell'acquisto.
+    """
+    items: list[OrderItemRead] = Field(default_factory=list, description="Lista degli articoli acquistati")
